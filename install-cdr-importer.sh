@@ -178,7 +178,7 @@ mv /root/go/src/cdrimporter/cdrimporter /usr/bin/cdrimporter;
 # Change CDR Importer owner, group and file permissions
 chown -R root:cdr-importer /etc/cdr-importer;
 chmod 550 /etc/cdr-importer;
-chmod 440 /etc/cdr-importer/cdr-importer.env;
+chmod 660 /etc/cdr-importer/cdr-importer.env;
 
 # Change directroy to /root
 cd /root;
@@ -207,9 +207,9 @@ mysql -u root -e "FLUSH PRIVILEGES;";
 
 printf $bg_green;
 printf $text_bold_white;
-printf " ╔═══════════════════════════════════════╗ \n";
-printf " ║ CDR Importer has been installed in /usr/bin    ║ \n";
+printf " ╔═════════════════════════════════════════════════════════════╗ \n";
+printf " ║ CDR Importer has been installed in /usr/bin                 ║ \n";
 printf " ║ To use CDR Importer type \"sudo -u cdr-importer cdrimporter\" ║ \n"; 
-printf " ╚═══════════════════════════════════════╝ \n";
+printf " ╚═════════════════════════════════════════════════════════════╝ \n";
 printf $reset_colour;
 exit;
