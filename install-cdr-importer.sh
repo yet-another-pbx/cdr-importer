@@ -196,7 +196,7 @@ mysql -u root -e "CREATE USER 'cdr-importer'@'localhost' IDENTIFIED BY '$mariadb
 mysql -u root -e "FLUSH PRIVILEGES;";
 
 # Create cdr_importer tables
-mysql -u root -D yap -e "SOURCE /root/cdrimporter/mariadb/cdr-importer.sql;";
+mysql -u root -D yap -e "SOURCE /root/cdr-importer/mariadb/cdr-importer.sql;";
 
 # Grant privileges for cdr-importer MariaDB user
 mysql -u root -e "GRANT SELECT, INSERT, UPDATE, CREATE, ALTER, REFERENCES, INDEX ON cdr_importer.* TO 'cdr-importer'@'localhost';";
