@@ -3,6 +3,7 @@
 CREATE TABLE `cdr_importer`.`voip_carrier` (
   `id` BIGINT UNSIGNED AUTO_INCREMENT NOT NULL,
   `name` VARCHAR(255) NOT NULL,
+  `date_time_added` DATETIME DEFAULT NOW() NOT NULL,
   UNIQUE (`name`),
   PRIMARY KEY(`id`)
 )
@@ -47,7 +48,7 @@ SELECT
   `voip_carrier`.`id` AS 'voip_carrier_id',
   `voip_carrier`.`name` AS 'voip_carrier_name',
   `yap_cdr_insert_log`.`cdr_month_year`,
-  `yap_cdr_insert_log`.`date_time_added`
+  `yap_cdr_insert_log`.`date_time_added` AS 'yap_cdr_insert_log_date_time_added'
 FROM `voip_carrier`
 INNER JOIN `yap_cdr_insert_log`
 ON `voip_carrier`.`id` = `yap_cdr_insert_log`.`voip_carrier_id`;
