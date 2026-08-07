@@ -46,16 +46,16 @@ fi;
 #----------------------------------------------------------------------
 
 # Check CDR Importer has been cloned from GitHub
-if [[ ! -d "/root/cdrimporter" ]]
+if [[ ! -d "/root/cdr-importer" ]]
 then
   printf $clear_screen;
   printf $bg_red;
   printf $text_bold_white;
-  printf " ╔═════════════════════════════════════════════════════════════════════════════════════════════╗ \n";
-  printf " ║ Directory cdrimporter does not exist in /root.                                              ║ \n";
-  printf " ║ Please run commands: \"cd /root && git clone https://github.com/yet-another-pbx/cdrimporter\" ║ \n";
-  printf " ║ and run the install script again.                                                           ║ \n";
-  printf " ╚═════════════════════════════════════════════════════════════════════════════════════════════╝ \n";
+  printf " ╔══════════════════════════════════════════════════════════════════════════════════════════════╗ \n";
+  printf " ║ Directory cdrimporter does not exist in /root.                                               ║ \n";
+  printf " ║ Please run commands: \"cd /root && git clone https://github.com/yet-another-pbx/cdr-importer\" ║ \n";
+  printf " ║ and run the install script again.                                                            ║ \n";
+  printf " ╚══════════════════════════════════════════════════════════════════════════════════════════════╝ \n";
   printf $reset_colour;
   exit;
 fi;
