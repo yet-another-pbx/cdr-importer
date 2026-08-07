@@ -2,7 +2,7 @@
 
 CREATE TABLE `cdr_importer`.`voip_carrier` (
   `id` SMALLINT UNSIGNED AUTO_INCREMENT NOT NULL,
-  `name` VARCHAR(255) NOT NULL,
+  `name` VARCHAR(50) NOT NULL,
   `date_time_added` DATETIME DEFAULT NOW() NOT NULL,
   UNIQUE (`name`),
   PRIMARY KEY(`id`)
@@ -14,7 +14,7 @@ ENGINE = InnoDB;
 CREATE TABLE `cdr_importer`.`yap_cdr_insert_log` (
   `id` BIGINT UNSIGNED AUTO_INCREMENT NOT NULL,
   `voip_carrier_id` SMALLINT UNSIGNED NOT NULL,
-  `cdr_month_year` VARCHAR(255) NOT NULL,
+  `cdr_month_year` VARCHAR(7) NOT NULL,
   `date_time_added` DATETIME DEFAULT NOW() NOT NULL,
   PRIMARY KEY(`id`)
 )
