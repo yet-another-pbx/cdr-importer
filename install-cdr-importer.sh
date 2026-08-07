@@ -59,3 +59,36 @@ then
   printf $reset_colour;
   exit;
 fi;
+
+#----------------------------------------------------------------------
+
+# CDR Importer Install Title
+printf $clear_screen;
+printf "\n";
+printf "          ██████╗ ██████╗  ██████╗     ██╗ ███╗   ███╗ ██████╗   ██████╗  ██████╗  ████████╗ ███████╗ ██████╗\n";
+printf "         ██╔════╝ ██╔══██╗ ██╔══██╗    ██║ ████╗ ████║ ██╔══██╗ ██╔═══██╗ ██╔══██╗ ╚══██╔══╝ ██╔════╝ ██╔══██╗\n";
+printf "         ██║      ██║  ██║ ██████╔╝    ██║ ██╔████╔██║ ██████╔╝ ██║   ██║ ██████╔╝    ██║    █████╗   ██████╔╝\n";
+printf "         ██║      ██║  ██║ ██╔══██╗    ██║ ██║╚██╔╝██║ ██╔═══╝  ██║   ██║ ██╔══██╗    ██║    ██╔══╝   ██╔══██╗\n";
+printf "         ╚██████╗ ██████╔╝ ██║  ██║    ██║ ██║ ╚═╝ ██║ ██║      ╚██████╔╝ ██║  ██║    ██║    ███████╗ ██║  ██║\n";
+printf "          ╚═════╝ ╚═════╝  ╚═╝  ╚═╝    ╚═╝ ╚═╝     ╚═╝ ╚═╝       ╚═════╝  ╚═╝  ╚═╝    ╚═╝    ╚══════╝ ╚═╝  ╚═╝\n";
+printf "";
+printf "   ██╗ ███╗   ██╗ ███████╗ ████████╗  █████╗  ██╗      ██╗         ███████╗  ██████╗ ██████╗  ██╗ ██████╗  ████████╗\n";
+printf "   ██║ ████╗  ██║ ██╔════╝ ╚══██╔══╝ ██╔══██╗ ██║      ██║         ██╔════╝ ██╔════╝ ██╔══██╗ ██║ ██╔══██╗ ╚══██╔══╝\n";
+printf "   ██║ ██╔██╗ ██║ ███████╗    ██║    ███████║ ██║      ██║         ███████╗ ██║      ██████╔╝ ██║ ██████╔╝    ██║   \n";
+printf "   ██║ ██║╚██╗██║ ╚════██║    ██║    ██╔══██║ ██║      ██║         ╚════██║ ██║      ██╔══██╗ ██║ ██╔═══╝     ██║   \n";
+printf "   ██║ ██║ ╚████║ ███████║    ██║    ██║  ██║ ███████╗ ███████╗    ███████║ ╚██████╗ ██║  ██║ ██║ ██║         ██║   \n";
+printf "   ╚═╝ ╚═╝  ╚═══╝ ╚══════╝    ╚═╝    ╚═╝  ╚═╝ ╚══════╝ ╚══════╝    ╚══════╝  ╚═════╝ ╚═╝  ╚═╝ ╚═╝ ╚═╝         ╚═╝   \n";
+printf "\n";
+printf "  $bg_purple $text_bold_white╔══════════════════════════════════════════════════════════════════════════════════════════════════════════════╗ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║ To install and use the CDR Importer the following prerequisites must be completed in advance of the install: ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║                                                                                                              ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║ - YAP (Yet Another PBX) must be installed                                                                    ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║   (To install YAP - https://github.com/yet-another-pbx/yap)                                                  ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║                                                                                                              ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║ - The Go programming language (minimum version 1.26.0) must be installed                                     ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║   (To install the Go programming language - https://go.dev/doc/install)                                      ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║   (The YAP install script also automatically installs the Go programming langauge)                           ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║                                                                                                              ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white║                             - TYPE EXIT TO STOP THE CDR IMPORTER INSTALL SCRIPT -                            ║ $reset_colour\n";
+printf "  $bg_purple $text_bold_white╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════╝ $reset_colour\n";
+printf "\n";
