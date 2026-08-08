@@ -517,7 +517,7 @@ func option4(dbDetail databaseFunctionParameter) {
 		voipCarrierID := selectWhere(dbDetail)
 
 		if voipCarrierID == "" {
-			// Inform the user the VoIP carrier was created
+			// Inform the user the VoIP carrier was not created
 			messageBox("Error creating VoIP carrier", bgRed)
 			returnToMainMenu()
 		} else {
