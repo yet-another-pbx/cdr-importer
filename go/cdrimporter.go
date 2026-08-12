@@ -25,6 +25,7 @@ import (
 	"github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
 	"os"
+	"runtime"
 	"slices"
 	"strconv"
 	"strings"
@@ -168,6 +169,7 @@ func exit(value string) {
 
 	if value == "exit" || value == "Exit" || value == "EXIT" || value == "quit" || value == "Quit" || value == "QUIT" {
 		messageBox("Program exited successfully", bgGreen)
+		fmt.Println("")
 		os.Exit(0)
 	}
 }
@@ -176,7 +178,20 @@ func exit(value string) {
 func mainMenu(value string) {
 
 	if value == "menu" || value == "Menu" || value == "MENU" {
-		main()
+		cdrimporter()
+	}
+}
+
+// Function to return to main menu when the enter key is pressed
+func returnToMainMenu() {
+
+	fmt.Print(textBoldBlack)
+	fmt.Print("     Press the enter/return key to continue ")
+	fmt.Print(resetColour)
+	var enterMainMenu string
+	fmt.Scanln(&enterMainMenu)
+	if enterMainMenu == "" || enterMainMenu != "" {
+		cdrimporter()
 	}
 }
 
@@ -195,19 +210,6 @@ func messageBox(message string, bgColour string) {
 	fmt.Println("     " + bgColour + textBoldWhite + " ⊛" + inbetweenSpace + "⊛ " + resetColour)
 	fmt.Println("     " + bgColour + textBoldWhite + topBottomSymbol + " " + resetColour)
 	fmt.Println("")
-}
-
-// Function to return to main menu when the enter key is pressed
-func returnToMainMenu() {
-
-	fmt.Print(textBoldBlack)
-	fmt.Print("     Press the enter/return key to continue ")
-	fmt.Print(resetColour)
-	var enter string
-	fmt.Scanln(&enter)
-	if enter == "" || enter != "" {
-		main()
-	}
 }
 
 // Function to format ISO datetime format
@@ -343,11 +345,11 @@ func makeRateCardView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionP
 
 	dbDetail.connection.Exec(`CREATE VIEW view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + ` AS
 	SELECT
-		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardDescriptionColumnNumber + `, 'DESCRIPTION MISSING') AS 'description',
-		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardChargeCodeColumnNumber + `, 'CHARGE CODE MISSING') AS 'charge_code',
-                IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardPricePerMinuteColumnNumber + `, '0.00') AS 'price_per_minute',
-		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardMinimumPricePerCallColumnNumber + `, '0.00') AS 'minimum_price_per_call',                
-                IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardPricePerCallColumnNumber + `, '0.00') AS 'price_per_call'
+		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardDescriptionColumnNumber + `, '') AS 'description',
+		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardChargeCodeColumnNumber + `, '') AS 'charge_code',
+                IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardPricePerMinuteColumnNumber + `, '') AS 'price_per_minute',
+		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardMinimumPricePerCallColumnNumber + `, '') AS 'minimum_price_per_call',                
+                IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardPricePerCallColumnNumber + `, '') AS 'price_per_call'
 	FROM ` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `;`)
 }
 
@@ -362,20 +364,34 @@ func makeCDRView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionParame
 		timeColumn = "no_time"
 	}
 
-	_, err := dbDetail.connection.Exec(`CREATE VIEW view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + ` AS
+	dbDetail.connection.Exec(`CREATE VIEW view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + ` AS
         SELECT
-                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrTagColumnNumber + `, 'TAG MISSING') AS 'tag',
-		IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrNumberDialledColumnNumber + `, 'PHONE NUMBER DIALLED MISSING') AS 'number_dialled',
-		IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrDescriptionColumnNumber + `, 'DESCRIPTION MISSING') AS 'description',
-                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrChargeCodeColumnNumber + `, 'CHARGE CODE MISSING') AS 'charge_code',
-                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrDurationColumnNumber + `, 'DURATION MISSING') AS 'duration',
-                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrDateTimeColumnNumber + `, 'DATE (AND TIME)') AS 'date_time',
+                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrTagColumnNumber + `, '') AS 'tag',
+		IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrNumberDialledColumnNumber + `, '') AS 'number_dialled',
+		IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrDescriptionColumnNumber + `, '') AS 'description',
+                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrChargeCodeColumnNumber + `, '') AS 'charge_code',
+                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrDurationColumnNumber + `, '') AS 'duration',
+                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrDateTimeColumnNumber + `, '') AS 'date_time',
                 IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + timeColumn + `, '') AS 'time',                
-                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrMonthYearColumnNumber + `, 'MONTH YEAR MISSING') AS 'month_year'
+                IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrMonthYearColumnNumber + `, '') AS 'month_year'
         FROM ` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `;`)
-	if err != nil {
-		fmt.Println(err)
+}
+
+func voipCarrierIDNameDraw(dbDetail databaseFunctionParameter) {
+	voipCarrierIDNameList, _ := voipCarrierSlice(dbDetail)
+
+	fmt.Println(textBoldBlack)
+	fmt.Println("     ╔═════════════════════════════════════════════════════╦═════════════════╗")
+	fmt.Println("     ║                  VoIP Carrier Name                  ║ VoIP Carrier ID ║")
+
+	for _, voipCarrierIDNameValue := range voipCarrierIDNameList {
+		var id string = voipCarrierIDNameValue[0:][0]
+		var name string = voipCarrierIDNameValue[0:][1]
+		fmt.Println("     ╠═════════════════════════════════════════════════════╬═════════════════╣")
+		fmt.Println("     ║ " + name + strings.Repeat(" ", 52-len(name)) + "║ " + id + strings.Repeat(" ", 16-len(id)) + "║")
 	}
+	fmt.Println("     ╚═════════════════════════════════════════════════════╩═════════════════╝")
+	fmt.Println(resetColour)
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -434,42 +450,35 @@ func option0(dbDetail databaseFunctionParameter) {
 
 // Option 1 function
 func option1() {
-
+	returnToMainMenu()
 }
 
 // Option 2 function
 // List all call rates for a VoIP carrier
 func option2(dbDetail databaseFunctionParameter) {
 
-	voipCarrierIDNameList, _ := voipCarrierSlice(dbDetail)
-
 	clearScreen()
 	fmt.Println("")
-	fmt.Println(textBoldBlack)
+	fmt.Println("")
 	fmt.Println("          ╔═════╦════════════════════════════════════════╗")
 	fmt.Println("          ║ " + bgBlue + textBoldWhite + "[2]" + resetColour + textBoldBlack + " ║ " + bgBlue + textBoldWhite + "List all call rates for a VoIP carrier" + resetColour + textBoldBlack + " ║")
-	fmt.Println("     ╔════╩═════╩════════════════════════════════════════╩═╦═════════════════╗")
-	fmt.Println("     ║                  VoIP Carrier Name                  ║ VoIP Carrier ID ║")
+	fmt.Println("     ╔════╩═════╩═════════════════════════════╦══════════╝")
+	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
+	fmt.Println("     ╚════════════════════════════════════════╝")
 
-	for _, voipCarrierIDNameValue := range voipCarrierIDNameList {
-		var id string = voipCarrierIDNameValue[0:][0]
-		var name string = voipCarrierIDNameValue[0:][1]
-		fmt.Println("     ╠═════════════════════════════════════════════════════╬═════════════════╣")
-		fmt.Println("     ║ " + name + strings.Repeat(" ", 52-len(name)) + "║ " + id + strings.Repeat(" ", 16-len(id)) + "║")
-	}
-	fmt.Println("     ╚═════════════════════════════════════════════════════╩═════════════════╝")
+	voipCarrierIDNameDraw(dbDetail)
 
 	_, voipCarrierIDList := voipCarrierSlice(dbDetail)
 
 	var voipCarrierID string
 
-	fmt.Println("")
+	fmt.Print(textBoldBlack)
 	fmt.Print("     Enter the VoIP carrier ID [Valid input - numeric]: ")
 	fmt.Scanln(&voipCarrierID)
 
 	// If the user pressed the enter/return key then re-run the main function
 	if voipCarrierID == "" {
-		main()
+		cdrimporter()
 	}
 
 	// Return to main menu if menu is input
@@ -481,7 +490,6 @@ func option2(dbDetail databaseFunctionParameter) {
 	if validateVoIPCarrierID == false {
 		// Invalid input message displays to the user
 		messageBox("The VoIP carrier ID does not exist ", bgYellow)
-		fmt.Print(textBoldBlack)
 		fmt.Print("     Press the enter/return key to continue ")
 		fmt.Print(resetColour)
 		var enter string
@@ -639,7 +647,7 @@ func option4(dbDetail databaseFunctionParameter) {
 
 	// If the user pressed the enter/return key then re-run the main function
 	if newName == "" {
-		main()
+		cdrimporter()
 	}
 
 	// Return to main menu if menu is input
@@ -673,7 +681,7 @@ func option4(dbDetail databaseFunctionParameter) {
 
 	if validateCallDirection == false {
 		// Invalid input message displays to the user
-		messageBox("Invalid option, please re-enter either "+strings.Join(callDirectionList, ", "), bgYellow)
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, " or ")+" "), bgYellow)
 		fmt.Print(textBoldBlack)
 		fmt.Print("     Press the enter/return key to continue ")
 		fmt.Print(resetColour)
@@ -704,7 +712,7 @@ func option4(dbDetail databaseFunctionParameter) {
 	// Check if name already exists in the voip_carrier table
 	voipCarrierName := selectWhere(dbDetail)
 
-	if voipCarrierName == newName+" - "+callDirection {
+	if voipCarrierName == newName+" ("+callDirection+")" {
 		// VoIP carrier name already exists
 		messageBox("VoIP carrier name already exists, please choose another name ", bgYellow)
 		fmt.Print(textBoldBlack)
@@ -946,11 +954,13 @@ func option4(dbDetail databaseFunctionParameter) {
 			// Import rate card CSV into VoIP carrier rate card table
 			dbDetail.table = callDirection + "_rate_card_" + voipCarrierID
 			sqlDetail.filePath = rateCardFilePath
+
 			if rateCardIgnoreFirstLine == "yes" || rateCardIgnoreFirstLine == "Yes" || rateCardIgnoreFirstLine == "YES" || rateCardIgnoreFirstLine == "y" || rateCardIgnoreFirstLine == "Y" {
 				sqlDetail.ignoreFirstCSVLine = true
 			} else {
 				sqlDetail.ignoreFirstCSVLine = false
 			}
+
 			importCSV(dbDetail, sqlDetail)
 
 			// Inform the user the VoIP carrier was created
@@ -963,32 +973,168 @@ func option4(dbDetail databaseFunctionParameter) {
 
 // Option 5 function
 func option5() {
-
+	returnToMainMenu()
 }
 
 // Option 6 function
-func option6() {
+// Import a new CDR into an existing VoIP carrier
+func option6(dbDetail databaseFunctionParameter) {
 
+	var (
+		voipCarrierID      string
+		callDirection      string
+		cdrFilePath        string
+		cdrIgnoreFirstLine string
+	)
+
+	clearScreen()
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("          ╔═════╦════════════════════════════════════════════════╗")
+	fmt.Println("          ║ " + bgGreen + textBoldWhite + "[6]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Import a new CDR into an existing VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ╔════╩═════╩═════════════════════════════╦══════════════════╝")
+	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
+	fmt.Println("     ╚════════════════════════════════════════╝")
+
+	voipCarrierIDNameDraw(dbDetail)
+
+	fmt.Print(textBoldBlack)
+
+	_, voipCarrierIDList := voipCarrierSlice(dbDetail)
+
+	fmt.Print(textBoldBlack)
+	fmt.Print("     Enter the VoIP carrier ID [Valid input - numeric]: ")
+	fmt.Scanln(&voipCarrierID)
+
+	// If the user pressed the enter/return key then re-run the main function
+	if voipCarrierID == "" {
+		cdrimporter()
+	}
+
+	// Return to main menu if menu is input
+	mainMenu(voipCarrierID)
+
+	// Check rateCardIgnoreFirstLine is contained in the slice
+	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
+
+	if validateVoIPCarrierID == false {
+		// Invalid input message displays to the user
+		messageBox("The VoIP carrier ID does not exist ", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option6(dbDetail)
+		}
+	}
+
+	callDirectionList := callDirectionSlice()
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier CDR direction [Valid options - " + strings.Join(callDirectionList, ", ") + "]: ")
+	fmt.Scan(&callDirection)
+	// Return to main menu if menu is input
+	mainMenu(callDirection)
+
+	// Check callDirection is contained in the slice
+	validateCallDirection := slices.Contains(callDirectionList, callDirection)
+
+	if validateCallDirection == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, " or ")+" "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option6(dbDetail)
+		}
+	}
+
+	fmt.Println("")
+	fmt.Print("     Enter the absolute path for the CDR [Example: /root/inbound-cdr.csv]: ")
+	fmt.Scan(&cdrFilePath)
+
+	// Return to main menu if menu is input
+	mainMenu(cdrFilePath)
+
+	// Check rateCardFilePath is a file path
+	validateCDRFilePath := validateInput(cdrFilePath, "filePath")
+
+	if validateCDRFilePath == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid absolute path for the CDR, please check the CDR location and re-enter the absolute path", bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option6(dbDetail)
+		}
+	}
+
+	yesNoList := yesNoSlice()
+	fmt.Println("")
+	fmt.Print("     Ignore the first row/line of the CDR CSV file when importing into the database table? [Valid options - " + strings.Join(yesNoList, ", ") + "]: ")
+	fmt.Scan(&cdrIgnoreFirstLine)
+	// Return to main menu if menu is input
+	mainMenu(cdrIgnoreFirstLine)
+
+	// Check cdrIgnoreFirstLine is contained in the slice
+	validateCDRIgnoreFirstLine := slices.Contains(yesNoList, cdrIgnoreFirstLine)
+
+	if validateCDRIgnoreFirstLine == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option for CDR ignore first row/line, please re-enter with either "+strings.Join(yesNoList, ", "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option6(dbDetail)
+		}
+	}
+
+	var sqlDetail sqlFunctionParameter
+
+	// Import rate card CSV into VoIP carrier rate card table
+	dbDetail.table = callDirection + "_cdr_" + voipCarrierID
+	sqlDetail.filePath = cdrFilePath
+
+	if cdrIgnoreFirstLine == "yes" || cdrIgnoreFirstLine == "Yes" || cdrIgnoreFirstLine == "YES" || cdrIgnoreFirstLine == "y" || cdrIgnoreFirstLine == "Y" {
+		sqlDetail.ignoreFirstCSVLine = true
+	} else {
+		sqlDetail.ignoreFirstCSVLine = false
+	}
+
+	importCSV(dbDetail, sqlDetail)
+
+	// Inform the user the VoIP carrier was created
+	messageBox("CDR added", bgGreen)
+	returnToMainMenu()
 }
 
 // Option 7 function
 func option7() {
-
+	returnToMainMenu()
 }
 
 // Option 8 function
 func option8() {
-
+	returnToMainMenu()
 }
 
 // Option 9 function
 func option9() {
-
+	returnToMainMenu()
 }
 
 //----------------------------------------------------------------------------------------------------
 
-func main() {
+func cdrimporter() {
 	clearScreen()
 	fmt.Println("")
 	fmt.Println("")
@@ -1054,7 +1200,7 @@ func main() {
 
 	// If the user pressed the enter/return key then re-run the main function
 	if option == "" {
-		main()
+		cdrimporter()
 	}
 
 	// Get the values from inside the CDR Importer configuration file
@@ -1145,13 +1291,25 @@ func main() {
 	} else if option == "5" {
 		option5()
 	} else if option == "6" {
-		option6()
+		dbDetail.connection = dbConnection
+		option6(dbDetail)
 	} else if option == "7" {
 		option7()
 	} else if option == "8" {
 		option8()
 	} else if option == "9" {
 		option9()
+	} else {
+		messageBox("Invalid option - enter option [0-9] or exit", bgYellow)
+		returnToMainMenu()
+	}
+}
+
+func main() {
+	if runtime.GOOS != "linux" {
+		fmt.Println("Operating system must be GNU/Linux to work")
+	} else {
+		cdrimporter()
 	}
 }
 
