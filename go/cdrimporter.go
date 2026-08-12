@@ -763,7 +763,7 @@ func option4(dbDetail databaseFunctionParameter) {
 	}
 
 	fmt.Println("")
-	fmt.Print("     Enter the CDR column number for the tag, usally the customers phone number but could be an SIP trunk ID [Valid input - Number 1-50]: ")
+	fmt.Print("     Enter the CDR column number for the tag, usally the customers phone number but could be a SIP trunk username or ID [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrTagColumnNumber)
 	// Return to main menu if menu is input
 	mainMenu(cdrTagColumnNumber)
@@ -1033,7 +1033,6 @@ func main() {
 	fmt.Println("     ╠═════╬═════════════════════════════════════════════════════════════════╦═══════════════╝")
 	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[9]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Insert a CDR for a particular month for a VoIP carrier into YAP" + resetColour + " ║")
 	fmt.Println("     ╚═════╩═════════════════════════════════════════════════════════════════╝")
-	//fmt.Println("")
 	fmt.Println("")
 	fmt.Print("     " + textBoldBlack + "Select an option [0-9]: ")
 	var option string
