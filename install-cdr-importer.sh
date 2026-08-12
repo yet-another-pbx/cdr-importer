@@ -199,7 +199,7 @@ mysql -u root -e "FLUSH PRIVILEGES;";
 mysql -u root -D yap -e "SOURCE /root/cdr-importer/mariadb/cdr-importer.sql;";
 
 # Grant privileges for cdr-importer MariaDB user
-mysql -u root -e "GRANT SELECT, INSERT, UPDATE, CREATE, ALTER, REFERENCES, INDEX ON cdr_importer.* TO 'cdr-importer'@'localhost';";
+mysql -u root -e "GRANT SELECT, INSERT, UPDATE, CREATE, ALTER, CREATE VIEW, REFERENCES, INDEX ON cdr_importer.* TO 'cdr-importer'@'localhost';";
 mysql -u root -e "FLUSH PRIVILEGES;";
 
 #----------------------------------------------------------------------
