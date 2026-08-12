@@ -681,7 +681,7 @@ func option4(dbDetail databaseFunctionParameter) {
 
 	if validateCallDirection == false {
 		// Invalid input message displays to the user
-		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, " or ")+" "), bgYellow)
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, ", ")+" "), bgYellow)
 		fmt.Print(textBoldBlack)
 		fmt.Print("     Press the enter/return key to continue ")
 		fmt.Print(resetColour)
@@ -1014,7 +1014,7 @@ func option6(dbDetail databaseFunctionParameter) {
 	// Return to main menu if menu is input
 	mainMenu(voipCarrierID)
 
-	// Check rateCardIgnoreFirstLine is contained in the slice
+	// Check voipCarrierID is contained in the slice
 	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
 
 	if validateVoIPCarrierID == false {
