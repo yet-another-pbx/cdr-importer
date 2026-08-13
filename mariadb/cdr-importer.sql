@@ -41,14 +41,21 @@ ON UPDATE CASCADE;
 
 ----------------------------------------------------------------------------------------------------
 
--- Create View
+-- Create Views
 
 CREATE VIEW `view___yap_cdr_insert_log_detail` AS
 SELECT 
   `voip_carrier`.`id` AS 'voip_carrier_id',
   `voip_carrier`.`name` AS 'voip_carrier_name',
   `yap_cdr_insert_log`.`cdr_month_year`,
-  `yap_cdr_insert_log`.`date_time_added` AS 'yap_cdr_insert_log_date_time_added'
+  DATE_FORMAT(`yap_cdr_insert_log`.`date_time_added`, '%d/%m/%Y %H:%i:%s') AS 'yap_cdr_insert_log_date_time_added'
 FROM `voip_carrier`
 INNER JOIN `yap_cdr_insert_log`
 ON `voip_carrier`.`id` = `yap_cdr_insert_log`.`voip_carrier_id`;
+
+CREATE VIEW `view___voip_carrier` AS
+SELECT 
+  `voip_carrier`.`id`,
+  `voip_carrier`.`name`,
+  DATE_FORMAT(`voip_carrier`.`date_time_added`, '%d/%m/%Y %H:%i:%s') AS 'date_time_added'
+FROM `voip_carrier`;
