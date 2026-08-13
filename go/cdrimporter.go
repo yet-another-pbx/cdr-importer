@@ -29,7 +29,6 @@ import (
 	"slices"
 	"strconv"
 	"strings"
-	"time"
 )
 
 //----------------------------------------------------------------------------------------------------
@@ -80,24 +79,23 @@ type databaseFunctionParameter struct {
 
 // Make table struct
 type sqlFunctionParameter struct {
-	tableType                               string
-	callDirection                           string
-	voipCarrierID                           string
-	filePath                                string
-	ignoreFirstCSVLine                      bool
-	cdrTagColumnNumber                      string
-	cdrNumberDialledColumnNumber            string
-	cdrDescriptionColumnNumber              string
-	cdrChargeCodeColumnNumber               string
-	cdrDurationColumnNumber                 string
-	cdrDateTimeColumnNumber                 string
-	cdrTimeColumn                           string
-	cdrMonthYearColumnNumber                string
-	rateCardDescriptionColumnNumber         string
-	rateCardChargeCodeColumnNumber          string
-	rateCardPricePerMinuteColumnNumber      string
-	rateCardMinimumPricePerCallColumnNumber string
-	rateCardPricePerCallColumnNumber        string
+	tableType                          string
+	callDirection                      string
+	voipCarrierID                      string
+	filePath                           string
+	ignoreFirstCSVLine                 bool
+	cdrTagColumnNumber                 string
+	cdrNumberDialledColumnNumber       string
+	cdrDescriptionColumnNumber         string
+	cdrChargeCodeColumnNumber          string
+	cdrDurationColumnNumber            string
+	cdrDateTimeColumnNumber            string
+	cdrTimeColumn                      string
+	cdrMonthYearColumnNumber           string
+	rateCardDescriptionColumnNumber    string
+	rateCardChargeCodeColumnNumber     string
+	rateCardPricePerMinuteColumnNumber string
+	rateCardPricePerCallColumnNumber   string
 }
 
 // Function to return slice of tableType
@@ -139,8 +137,18 @@ func validateInput(value string, valueType string) (validation bool) {
 			validation = true
 			return
 		}
+	} else if valueType == "monthYear" {
+		validateInputMonthYearErr := validateInput.Var(value, "datetime=01/2006,min=7,max=7")
+		if validateInputMonthYearErr != nil {
+			validation = false
+			fmt.Println(value)
+			return
+		} else {
+			validation = true
+			return
+		}
 	} else {
-		panic("The validateInput function can only take the following arguments: alphaNum or filePath")
+		panic("The validateInput function can only take the following arguments: alphaNum, filePath or monthYear")
 	}
 }
 
@@ -210,18 +218,6 @@ func messageBox(message string, bgColour string) {
 	fmt.Println("     " + bgColour + textBoldWhite + " ⊛" + inbetweenSpace + "⊛ " + resetColour)
 	fmt.Println("     " + bgColour + textBoldWhite + topBottomSymbol + " " + resetColour)
 	fmt.Println("")
-}
-
-// Function to format ISO datetime format
-func formatDateTime(dateTime string) string {
-
-	const (
-		iso    = "2006-01-02 15:04:05"
-		layout = "02/01/2006 15:04:05 PM"
-	)
-
-	parse, _ := time.Parse(iso, dateTime)
-	return string(parse.Format(layout))
 }
 
 //----------------------------------------------------------------------------------------------------
@@ -348,7 +344,6 @@ func makeRateCardView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionP
 		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardDescriptionColumnNumber + `, '') AS 'description',
 		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardChargeCodeColumnNumber + `, '') AS 'charge_code',
                 IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardPricePerMinuteColumnNumber + `, '') AS 'price_per_minute',
-		IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardMinimumPricePerCallColumnNumber + `, '') AS 'minimum_price_per_call',                
                 IFNULL(` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.rateCardPricePerCallColumnNumber + `, '') AS 'price_per_call'
 	FROM ` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `;`)
 }
@@ -375,6 +370,61 @@ func makeCDRView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionParame
                 IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + timeColumn + `, '') AS 'time',                
                 IFNULL(` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.column_` + sqlDetail.cdrMonthYearColumnNumber + `, '') AS 'month_year'
         FROM ` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `;`)
+}
+
+// Function to create a rate card and CDR joined view
+func makeCDRRateCardView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionParameter) {
+
+	dbDetail.connection.Exec(`CREATE VIEW view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + ` AS
+	SELECT
+		view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.tag AS 'cdr_tag',
+		view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.number_dialled AS 'cdr_number_dialled',
+		view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.description AS 'cdr_description',
+		view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.charge_code AS 'cdr_charge_code',
+		view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.duration AS 'cdr_duration',
+		ROUND(TIME_TO_SEC(view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.duration), 0) AS 'cdr_duration_in_seconds',
+		CASE
+		  WHEN ROUND(TIME_TO_SEC(view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.duration), 0) < 60 THEN 60
+		  ELSE ROUND(TIME_TO_SEC(view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.duration), 0)
+		END AS 'cdr_duration_in_seconds_with_minimum_duration_60_seconds',
+		DATE_FORMAT(view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.date_time, '%d/%m/%Y %H:%i:%s') AS 'cdr_date_time',
+		TIME_FORMAT(view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.time, '%H:%i:%s') AS 'cdr_time',
+		view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.month_year AS 'cdr_month_year',
+		view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.description AS 'rate_card_description',
+		view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.price_per_minute AS 'rate_card_price_per_minute',
+		(view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.price_per_minute)/60 AS 'rate_card_price_per_second',
+		view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.price_per_call AS 'rate_card_price_per_call'
+	FROM view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + ` ` +
+		`INNER JOIN view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `
+	ON view___` + sqlDetail.callDirection + `_cdr_` + sqlDetail.voipCarrierID + `.charge_code = view___` + sqlDetail.callDirection + `_rate_card_` + sqlDetail.voipCarrierID + `.charge_code;`)
+}
+
+// Function to create itemised CDR view
+func makeItemisedCDRView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionParameter) {
+
+	dbDetail.connection.Exec(`CREATE VIEW view___` + sqlDetail.callDirection + `_itemised_cdr_` + sqlDetail.voipCarrierID + ` AS
+	SELECT
+		IFNULL(yap.view___invoice_item.customer_id, 'NO CUSTOMER') AS yap_customer_id,
+		IFNULL(yap.view___invoice_item.customer_name, 'NO CUSTOMER') AS yap_customer_name,
+		IFNULL(yap.view___invoice_item.service_product_name, '') AS yap_service_product_name,
+		IFNULL(yap.view___invoice_item.customer_uk_based, '') AS yap_uk_based,
+		IFNULL(yap.view___invoice_item.customer_reselling_minutes, '') AS yap_reselling_minutes,
+		IFNULL(yap.view___invoice_item.invoice_item_sales_tax_rate, '') AS yap_invoice_item_sales_tax_rate,
+		IFNULL(yap.view___invoice_item.invoice_item_sales_tax_status, '') AS yap_invoice_item_sales_tax_status,
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_tag,
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_number_dialled,
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_description,
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_duration,
+		IFNULL(cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_date_time, '') AS 'cdr_date_time',
+		IFNULL(cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_time, '') AS 'cdr_time',
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_month_year,
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_price_per_minute,
+		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_price_per_call,
+		ROUND((cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_duration_in_seconds * cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_price_per_second) + cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_price_per_call, 2) AS 'no_minimum_charge_for_call_duration',
+		ROUND((cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_duration_in_seconds_with_minimum_duration_60_seconds * cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_price_per_second) + cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.rate_card_price_per_call, 2) AS 'minimum_charge_for_call_duration_below_60_seconds'
+	FROM cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + ` ` +
+		`LEFT JOIN yap.view___invoice_item
+	ON cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_tag = yap.view___invoice_item.invoice_item_tag;`)
 }
 
 func voipCarrierIDNameDraw(dbDetail databaseFunctionParameter) {
@@ -411,7 +461,7 @@ func option0(dbDetail databaseFunctionParameter) {
 	                                                name,
 	                                                date_time_added
 	                                              FROM
-	                                                cdr_importer.voip_carrier;`)
+	                                                cdr_importer.view___voip_carrier;`)
 
 	// Error
 	if err != nil {
@@ -423,8 +473,8 @@ func option0(dbDetail databaseFunctionParameter) {
 	fmt.Println(textBoldBlack)
 	fmt.Println("          ╔═════╦═════════════════════════════════════╗")
 	fmt.Println("          ║ " + bgBlue + textBoldWhite + "[0]" + resetColour + textBoldBlack + " ║ " + bgBlue + textBoldWhite + "List all VoIP carrier IDs and names" + resetColour + textBoldBlack + " ║")
-	fmt.Println("     ╔════╩═════╩══════╦══════════════════════════════╩══════════════════════╦═════════════════════════╗")
-	fmt.Println("     ║ VoIP Carrier ID ║                  VoIP Carrier Name                  ║    Date & Time Added    ║")
+	fmt.Println("     ╔════╩═════╩══════╦══════════════════════════════╩══════════════════════╦═════════════════════╗")
+	fmt.Println("     ║ VoIP Carrier ID ║                  VoIP Carrier Name                  ║  Date & Time Added  ║")
 
 	for option0SQL.Next() {
 
@@ -439,23 +489,201 @@ func option0(dbDetail databaseFunctionParameter) {
 			panic(err)
 		}
 
-		fmt.Println("     ╠═════════════════╬═════════════════════════════════════════════════════╬═════════════════════════╣")
-		fmt.Println("     ║ " + id + strings.Repeat(" ", 16-len(id)) + "║ " + name + strings.Repeat(" ", 52-len(name)) + "║ " + formatDateTime(dateTimeAdded) + "  ║")
+		fmt.Println("     ╠═════════════════╬═════════════════════════════════════════════════════╬═════════════════════╣")
+		fmt.Println("     ║ " + id + strings.Repeat(" ", 16-len(id)) + "║ " + name + strings.Repeat(" ", 52-len(name)) + "║ " + dateTimeAdded + " ║")
 
 	}
-	fmt.Println("     ╚═════════════════╩═════════════════════════════════════════════════════╩═════════════════════════╝")
+	fmt.Println("     ╚═════════════════╩═════════════════════════════════════════════════════╩═════════════════════╝")
 	fmt.Println(resetColour)
 	returnToMainMenu()
 }
 
 // Option 1 function
-func option1() {
+// List a CDR from a particular month and year for a VoIP carrier
+func option1(dbDetail databaseFunctionParameter) {
+
+	var (
+		yapCustomerID                              string
+		yapCustomerName                            string
+		yapServiceProductName                      string
+		cdrTag                                     string
+		cdrNumberDialled                           string
+		cdrDuration                                string
+		cdrDateTime                                string
+		cdrTime                                    string
+		cdrMonthYear                               string
+		noMinimumChargeForCallDuration             string
+		minimumChargeForCallDurationBelow60Seconds string
+	)
+
+	var (
+		voipCarrierID  string
+		callDirection  string
+		enterMonthYear string
+	)
+
+	clearScreen()
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("          ╔═════╦════════════════════════════════════════════════════════════════╗")
+	fmt.Println("          ║ " + bgBlue + textBoldWhite + "[1]" + resetColour + textBoldBlack + " ║ " + bgBlue + textBoldWhite + "List a CDR from a particular month and year for a VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ╔════╩═════╩═════════════════════════════╦══════════════════════════════════╝")
+	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
+	fmt.Println("     ╚════════════════════════════════════════╝")
+
+	voipCarrierIDNameDraw(dbDetail)
+
+	_, voipCarrierIDList := voipCarrierSlice(dbDetail)
+
+	fmt.Print(textBoldBlack)
+	fmt.Print("     Enter the VoIP carrier ID [Valid input - numeric]: ")
+	fmt.Scanln(&voipCarrierID)
+
+	// If the user pressed the enter/return key then re-run the main function
+	if voipCarrierID == "" {
+		cdrimporter()
+	}
+
+	// Return to main menu if menu is input
+	mainMenu(voipCarrierID)
+
+	// Check rateCardIgnoreFirstLine is contained in the slice
+	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
+
+	if validateVoIPCarrierID == false {
+		// Invalid input message displays to the user
+		messageBox("The VoIP carrier ID does not exist ", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option1(dbDetail)
+		}
+	}
+
+	callDirectionList := callDirectionSlice()
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier CDR direction [Valid options - " + strings.Join(callDirectionList, ", ") + "]: ")
+	fmt.Scan(&callDirection)
+	// Return to main menu if menu is input
+	mainMenu(callDirection)
+
+	// Check callDirection is contained in the slice
+	validateCallDirection := slices.Contains(callDirectionList, callDirection)
+
+	if validateCallDirection == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, ", ")+" "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option1(dbDetail)
+		}
+	}
+
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier CDR month and year [Valid format - MM/YYYY]: ")
+	fmt.Scan(&enterMonthYear)
+	// Return to main menu if menu is input
+	mainMenu(enterMonthYear)
+
+	// Validate monthYear is a date
+	validateCDRMonthYear := validateInput(enterMonthYear, "monthYear")
+
+	if validateCDRMonthYear == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid month and year, please re-enter", bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option1(dbDetail)
+		}
+	}
+
+	option1SQL, err := dbDetail.connection.Query(`SELECT
+                                                        yap_customer_id,
+							yap_customer_name,
+							yap_service_product_name,
+							cdr_tag,
+							cdr_number_dialled,
+							cdr_duration,
+							cdr_date_time,
+							cdr_time,
+							cdr_month_year,
+							no_minimum_charge_for_call_duration,
+							minimum_charge_for_call_duration_below_60_seconds
+                                                      FROM
+                                                        cdr_importer.view___`+callDirection+`_itemised_cdr_`+voipCarrierID+`
+						      WHERE
+                                                        cdr_month_year = ?;`, enterMonthYear)
+
+	// Error
+	if err != nil {
+		// Invalid input message displays to the user
+		messageBox("The VoIP carrier does not exist", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ", err)
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option1(dbDetail)
+		}
+	}
+
+	clearScreen()
+	fmt.Println("")
+	fmt.Println(textBoldBlack)
+	fmt.Println("          ╔═════╦════════════════════════════════════════════════════════════════╗")
+	fmt.Println("          ║ " + bgBlue + textBoldWhite + "[1]" + resetColour + textBoldBlack + " ║ " + bgBlue + textBoldWhite + "List a CDR from a particular month and year for a VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ╔════╩═════╩════════╦════════════════════════════════╦══════════════════════╩╦══════════════════╦══════════╦═══════════════════════╦══════════╦═══════════╦═══════════════════╦═══════════════════════════╗")
+	fmt.Println("     ║        YAP        ║               YAP              ║          TAG          ║    Telephone     ║ Duration ║       Date (Time)     ║   Time   ║ MonthYear ║ No Minimum Charge ║  Minimum Charge For Call  ║")
+	fmt.Println("     ║    Customer ID    ║          Customer Name         ║ (Same on YAP Invoice) ║  Number Dialled  ║ HH:MM:SS ║ DD/MM/YYYY (HH:MM:SS) ║ HH:MM:SS ║  MM-YYYY  ║ For Call Duration ║ Duration Below 60 Seconds ║")
+
+	for option1SQL.Next() {
+
+		err = option1SQL.Scan(
+			&yapCustomerID,
+			&yapCustomerName,
+			&yapServiceProductName,
+			&cdrTag,
+			&cdrNumberDialled,
+			&cdrDuration,
+			&cdrDateTime,
+			&cdrTime,
+			&cdrMonthYear,
+			&noMinimumChargeForCallDuration,
+			&minimumChargeForCallDurationBelow60Seconds,
+		)
+
+		// Error
+		if err != nil {
+			panic(err)
+		}
+
+		fmt.Println("     ╠═══════════════════╬════════════════════════════════╬═══════════════════════╬══════════════════╬══════════╬═══════════════════════╬══════════╬═══════════╬═══════════════════╬═══════════════════════════╣")
+		fmt.Println("     ║ " + yapCustomerID + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + yapCustomerName + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + cdrNumberDialled + strings.Repeat(" ", 17-len(cdrNumberDialled)) + "║ " + cdrDuration + strings.Repeat(" ", 9-len(cdrDuration)) + "║ " + cdrDateTime + strings.Repeat(" ", 22-len(cdrDateTime)) + "║ " + cdrTime + strings.Repeat(" ", 9-len(cdrTime)) + "║ " + cdrMonthYear + strings.Repeat(" ", 10-len(cdrMonthYear)) + "║ " + noMinimumChargeForCallDuration + strings.Repeat(" ", 18-len(noMinimumChargeForCallDuration)) + "║ " + minimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 26-len(minimumChargeForCallDurationBelow60Seconds)) + "║")
+
+	}
+	fmt.Println("     ╚═══════════════════╩════════════════════════════════╩═══════════════════════╩══════════════════╩══════════╩═══════════════════════╩══════════╩═══════════╩═══════════════════╩═══════════════════════════╝")
+	fmt.Println(resetColour)
 	returnToMainMenu()
 }
 
 // Option 2 function
 // List all call rates for a VoIP carrier
 func option2(dbDetail databaseFunctionParameter) {
+
+	var (
+		voipCarrierID string
+		callDirection string
+	)
 
 	clearScreen()
 	fmt.Println("")
@@ -469,8 +697,6 @@ func option2(dbDetail databaseFunctionParameter) {
 	voipCarrierIDNameDraw(dbDetail)
 
 	_, voipCarrierIDList := voipCarrierSlice(dbDetail)
-
-	var voipCarrierID string
 
 	fmt.Print(textBoldBlack)
 	fmt.Print("     Enter the VoIP carrier ID [Valid input - numeric]: ")
@@ -499,26 +725,55 @@ func option2(dbDetail databaseFunctionParameter) {
 		}
 	}
 
+	callDirectionList := callDirectionSlice()
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier CDR direction [Valid options - " + strings.Join(callDirectionList, ", ") + "]: ")
+	fmt.Scan(&callDirection)
+	// Return to main menu if menu is input
+	mainMenu(callDirection)
+
+	// Check callDirection is contained in the slice
+	validateCallDirection := slices.Contains(callDirectionList, callDirection)
+
+	if validateCallDirection == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, ", ")+" "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option2(dbDetail)
+		}
+	}
+
 	var (
-		description         string
-		chargeCode          string
-		pricePerMinute      string
-		minimumPricePerCall string
-		pricePerCall        string
+		description    string
+		chargeCode     string
+		pricePerMinute string
+		pricePerCall   string
 	)
 
 	option2SQL, err := dbDetail.connection.Query(`SELECT
                                                         description,
                                                         charge_code,
                                                         price_per_minute,
-                                                        minimum_price_per_call,
                                                         price_per_call
                                                       FROM
-                                                        cdr_importer.view___inbound_rate_card_` + voipCarrierID + `;`)
+                                                        cdr_importer.view___` + callDirection + `_rate_card_` + voipCarrierID + `;`)
 
 	// Error
 	if err != nil {
-		panic(err)
+		// Invalid input message displays to the user
+		messageBox("The VoIP carrier does not exist", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option2(dbDetail)
+		}
 	}
 
 	clearScreen()
@@ -526,8 +781,8 @@ func option2(dbDetail databaseFunctionParameter) {
 	fmt.Println(textBoldBlack)
 	fmt.Println("          ╔═════╦════════════════════════════════════════╗")
 	fmt.Println("          ║ " + bgBlue + textBoldWhite + "[2]" + resetColour + textBoldBlack + " ║ " + bgBlue + textBoldWhite + "List all call rates for a VoIP carrier" + resetColour + textBoldBlack + " ║")
-	fmt.Println("     ╔════╩═════╩════════════════════════════════════════╩═════════════════════════════════════════════════╦═════════════════════════╦════════════════════════╦════════════════════════╦════════════════════════╗")
-	fmt.Println("     ║                                             Description                                             ║       Charge Code       ║    Price Per Minute    ║ Minimum Price Per Call ║    Price Per Minute    ║")
+	fmt.Println("     ╔════╩═════╩════════════════════════════════════════╩═════════════════════════════════════════════════╦═════════════════════════╦════════════════════════╦════════════════════════╗")
+	fmt.Println("     ║                                             Description                                             ║       Charge Code       ║    Price Per Minute    ║     Price Per Call     ║")
 
 	for option2SQL.Next() {
 
@@ -535,7 +790,6 @@ func option2(dbDetail databaseFunctionParameter) {
 			&description,
 			&chargeCode,
 			&pricePerMinute,
-			&minimumPricePerCall,
 			&pricePerCall,
 		)
 
@@ -544,11 +798,11 @@ func option2(dbDetail databaseFunctionParameter) {
 			panic(err)
 		}
 
-		fmt.Println("     ╠═════════════════════════════════════════════════════════════════════════════════════════════════════╬═════════════════════════╬════════════════════════╬════════════════════════╬════════════════════════╣")
-		fmt.Println("     ║ " + description + strings.Repeat(" ", 100-len(description)) + "║ " + chargeCode + strings.Repeat(" ", 24-len(chargeCode)) + "║ " + pricePerMinute + strings.Repeat(" ", 23-len(pricePerMinute)) + "║ " + minimumPricePerCall + strings.Repeat(" ", 23-len(minimumPricePerCall)) + "║ " + pricePerMinute + strings.Repeat(" ", 23-len(pricePerMinute)) + "║")
+		fmt.Println("     ╠═════════════════════════════════════════════════════════════════════════════════════════════════════╬═════════════════════════╬════════════════════════╬════════════════════════╣")
+		fmt.Println("     ║ " + description + strings.Repeat(" ", 100-len(description)) + "║ " + chargeCode + strings.Repeat(" ", 24-len(chargeCode)) + "║ " + pricePerMinute + strings.Repeat(" ", 23-len(pricePerMinute)) + "║ " + pricePerCall + strings.Repeat(" ", 23-len(pricePerCall)) + "║")
 
 	}
-	fmt.Println("     ╚═════════════════════════════════════════════════════════════════════════════════════════════════════╩═════════════════════════╩════════════════════════╩════════════════════════╩════════════════════════╝")
+	fmt.Println("     ╚═════════════════════════════════════════════════════════════════════════════════════════════════════╩═════════════════════════╩════════════════════════╩════════════════════════╝")
 	fmt.Println(resetColour)
 	returnToMainMenu()
 }
@@ -600,7 +854,7 @@ func option3(dbDetail databaseFunctionParameter) {
 		}
 
 		fmt.Println("     ╠═════════════════╬═════════════════════════════════════════════════════╬═════════════════════╬══════════════════════════════════════╣")
-		fmt.Println("     ║ " + voipCarrierID + strings.Repeat(" ", 16-len(voipCarrierID)) + "║ " + voipCarrierName + strings.Repeat(" ", 52-len(voipCarrierName)) + "║ " + cdrMonthYear + "             ║ " + formatDateTime(yapCDRInsertLogDateTimeAdded) + "               ║")
+		fmt.Println("     ║ " + voipCarrierID + strings.Repeat(" ", 16-len(voipCarrierID)) + "║ " + voipCarrierName + strings.Repeat(" ", 52-len(voipCarrierName)) + "║ " + cdrMonthYear + "             ║ " + yapCDRInsertLogDateTimeAdded + "               ║")
 
 	}
 	fmt.Println("     ╚═════════════════╩═════════════════════════════════════════════════════╩═════════════════════╩══════════════════════════════════════╝")
@@ -613,23 +867,22 @@ func option3(dbDetail databaseFunctionParameter) {
 func option4(dbDetail databaseFunctionParameter) {
 
 	var (
-		newName                                 string
-		callDirection                           string
-		rateCardFilePath                        string
-		rateCardIgnoreFirstLine                 string
-		cdrTagColumnNumber                      string
-		cdrNumberDialledColumnNumber            string
-		cdrDescriptionColumnNumber              string
-		cdrChargeCodeColumnNumber               string
-		cdrDurationColumnNumber                 string
-		cdrDateTimeColumnNumber                 string
-		cdrTimeColumn                           string
-		cdrMonthYearColumnNumber                string
-		rateCardDescriptionColumnNumber         string
-		rateCardChargeCodeColumnNumber          string
-		rateCardPricePerMinuteColumnNumber      string
-		rateCardMinimumPricePerCallColumnNumber string
-		rateCardPricePerCallColumnNumber        string
+		newName                            string
+		callDirection                      string
+		rateCardFilePath                   string
+		rateCardIgnoreFirstLine            string
+		cdrTagColumnNumber                 string
+		cdrNumberDialledColumnNumber       string
+		cdrDescriptionColumnNumber         string
+		cdrChargeCodeColumnNumber          string
+		cdrDurationColumnNumber            string
+		cdrDateTimeColumnNumber            string
+		cdrTimeColumn                      string
+		cdrMonthYearColumnNumber           string
+		rateCardDescriptionColumnNumber    string
+		rateCardChargeCodeColumnNumber     string
+		rateCardPricePerMinuteColumnNumber string
+		rateCardPricePerCallColumnNumber   string
 	)
 
 	clearScreen()
@@ -871,12 +1124,6 @@ func option4(dbDetail databaseFunctionParameter) {
 	mainMenu(rateCardPricePerMinuteColumnNumber)
 
 	fmt.Println("")
-	fmt.Print("     Enter the rate card column number for the minimum price per call [Valid input - Number 1-50]: ")
-	fmt.Scan(&rateCardMinimumPricePerCallColumnNumber)
-	// Return to main menu if menu is input
-	mainMenu(rateCardMinimumPricePerCallColumnNumber)
-
-	fmt.Println("")
 	fmt.Print("     Enter the rate card column number for the price per call [Valid input - Number 1-50]: ")
 	fmt.Scan(&rateCardPricePerCallColumnNumber)
 	// Return to main menu if menu is input
@@ -886,10 +1133,9 @@ func option4(dbDetail databaseFunctionParameter) {
 	validateRateCardDescriptionColumnNumber := validateColumnNumber(rateCardDescriptionColumnNumber)
 	validateRateCardChargeCodeColumnNumber := validateColumnNumber(rateCardChargeCodeColumnNumber)
 	validateRateCardPricePerMinuteColumnNumber := validateColumnNumber(rateCardPricePerMinuteColumnNumber)
-	validateRateCardMinimumPricePerCallColumnNumber := validateColumnNumber(rateCardMinimumPricePerCallColumnNumber)
 	validateRateCardPricePerCallColumnNumber := validateColumnNumber(rateCardPricePerCallColumnNumber)
 
-	if validateRateCardDescriptionColumnNumber == false || validateRateCardChargeCodeColumnNumber == false || validateRateCardPricePerMinuteColumnNumber == false || validateRateCardMinimumPricePerCallColumnNumber == false || validateRateCardPricePerCallColumnNumber == false {
+	if validateRateCardDescriptionColumnNumber == false || validateRateCardChargeCodeColumnNumber == false || validateRateCardPricePerMinuteColumnNumber == false || validateRateCardPricePerCallColumnNumber == false {
 		// Invalid input message displays to the user
 		messageBox("Invalid input for rate card column numbers, please re-enter a number between 1 and 50 ", bgYellow)
 		fmt.Print(textBoldBlack)
@@ -937,7 +1183,6 @@ func option4(dbDetail databaseFunctionParameter) {
 			sqlDetail.rateCardDescriptionColumnNumber = rateCardDescriptionColumnNumber
 			sqlDetail.rateCardChargeCodeColumnNumber = rateCardChargeCodeColumnNumber
 			sqlDetail.rateCardPricePerMinuteColumnNumber = rateCardPricePerMinuteColumnNumber
-			sqlDetail.rateCardMinimumPricePerCallColumnNumber = rateCardMinimumPricePerCallColumnNumber
 			sqlDetail.rateCardPricePerCallColumnNumber = rateCardPricePerCallColumnNumber
 			makeRateCardView(dbDetail, sqlDetail)
 
@@ -950,6 +1195,12 @@ func option4(dbDetail databaseFunctionParameter) {
 			sqlDetail.cdrDateTimeColumnNumber = cdrDateTimeColumnNumber
 			sqlDetail.cdrMonthYearColumnNumber = cdrMonthYearColumnNumber
 			makeCDRView(dbDetail, sqlDetail)
+
+			// Create CDR rate card view
+			makeCDRRateCardView(dbDetail, sqlDetail)
+
+			// Create itemised CDR view
+			makeItemisedCDRView(dbDetail, sqlDetail)
 
 			// Import rate card CSV into VoIP carrier rate card table
 			dbDetail.table = callDirection + "_rate_card_" + voipCarrierID
@@ -1041,7 +1292,7 @@ func option6(dbDetail databaseFunctionParameter) {
 
 	if validateCallDirection == false {
 		// Invalid input message displays to the user
-		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, " or ")+" "), bgYellow)
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, ", ")+" "), bgYellow)
 		fmt.Print(textBoldBlack)
 		fmt.Print("     Press the enter/return key to continue ")
 		fmt.Print(resetColour)
@@ -1138,22 +1389,23 @@ func cdrimporter() {
 	clearScreen()
 	fmt.Println("")
 	fmt.Println("")
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                                                                                                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃    ██████╗ ██████╗  ██████╗     ██╗ ███╗   ███╗ ██████╗   ██████╗  ██████╗  ████████╗ ███████╗ ██████╗    ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃   ██╔════╝ ██╔══██╗ ██╔══██╗    ██║ ████╗ ████║ ██╔══██╗ ██╔═══██╗ ██╔══██╗ ╚══██╔══╝ ██╔════╝ ██╔══██╗   ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃   ██║      ██║  ██║ ██████╔╝    ██║ ██╔████╔██║ ██████╔╝ ██║   ██║ ██████╔╝    ██║    █████╗   ██████╔╝   ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃   ██║      ██║  ██║ ██╔══██╗    ██║ ██║╚██╔╝██║ ██╔═══╝  ██║   ██║ ██╔══██╗    ██║    ██╔══╝   ██╔══██╗   ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃   ╚██████╗ ██████╔╝ ██║  ██║    ██║ ██║ ╚═╝ ██║ ██║      ╚██████╔╝ ██║  ██║    ██║    ███████╗ ██║  ██║   ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃    ╚═════╝ ╚═════╝  ╚═╝  ╚═╝    ╚═╝ ╚═╝     ╚═╝ ╚═╝       ╚═════╝  ╚═╝  ╚═╝    ╚═╝    ╚══════╝ ╚═╝  ╚═╝   ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                                                                                                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃         Source code for CDR Importer available at https://github.com/yet-another-pbx/cdr-importer         ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                                                                                                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                           " + resetColour + bgRed + "                                                     " + textBoldWhite + resetColour + bgCyan + textBoldWhite + "                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                           " + resetColour + bgRed + textBoldWhite + "   Type \"exit\" or \"quit\" to terminate CDR Importer   " + resetColour + bgCyan + textBoldWhite + "                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                           " + resetColour + bgRed + textBoldWhite + "                                                     " + resetColour + bgCyan + textBoldWhite + "                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                                                                                                           ┃ " + resetColour)
-	fmt.Println("     " + bgCyan + textBoldWhite + " ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ╔═╗ ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ ╔═╗ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ╚═╝ ┃                                                                                                       ┃ ╚═╝ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┏━━━┛                                                                                                       ┗━━━┓ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃      ██████╗ ██████╗  ██████╗     ██╗ ███╗   ███╗ ██████╗   ██████╗  ██████╗  ████████╗ ███████╗ ██████╗      ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃     ██╔════╝ ██╔══██╗ ██╔══██╗    ██║ ████╗ ████║ ██╔══██╗ ██╔═══██╗ ██╔══██╗ ╚══██╔══╝ ██╔════╝ ██╔══██╗     ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃     ██║      ██║  ██║ ██████╔╝    ██║ ██╔████╔██║ ██████╔╝ ██║   ██║ ██████╔╝    ██║    █████╗   ██████╔╝     ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃     ██║      ██║  ██║ ██╔══██╗    ██║ ██║╚██╔╝██║ ██╔═══╝  ██║   ██║ ██╔══██╗    ██║    ██╔══╝   ██╔══██╗     ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃     ╚██████╗ ██████╔╝ ██║  ██║    ██║ ██║ ╚═╝ ██║ ██║      ╚██████╔╝ ██║  ██║    ██║    ███████╗ ██║  ██║     ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃      ╚═════╝ ╚═════╝  ╚═╝  ╚═╝    ╚═╝ ╚═╝     ╚═╝ ╚═╝       ╚═════╝  ╚═╝  ╚═╝    ╚═╝    ╚══════╝ ╚═╝  ╚═╝     ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                                                                                                               ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃           Source code for CDR Importer available at https://github.com/yet-another-pbx/cdr-importer           ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                                                                                                               ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                            " + resetColour + bgRed + "                                                     " + textBoldWhite + resetColour + bgCyan + textBoldWhite + "                              ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┃                            " + resetColour + bgRed + textBoldWhite + "   Type \"exit\" or \"quit\" to terminate CDR Importer   " + resetColour + bgCyan + textBoldWhite + "                              ┃ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ┗━━━┓                        " + resetColour + bgRed + textBoldWhite + "                                                     " + resetColour + bgCyan + textBoldWhite + "                          ┏━━━┛ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ╔═╗ ┃                                                                                                       ┃ ╔═╗ " + resetColour)
+	fmt.Println("     " + bgCyan + textBoldWhite + " ╚═╝ ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ ╚═╝ " + resetColour)
 
 	fmt.Print(textBoldBlack)
 	fmt.Println("")
@@ -1279,7 +1531,8 @@ func cdrimporter() {
 		dbDetail.connection = dbConnection
 		option0(dbDetail)
 	} else if option == "1" {
-		option1()
+		dbDetail.connection = dbConnection
+		option1(dbDetail)
 	} else if option == "2" {
 		dbDetail.connection = dbConnection
 		option2(dbDetail)
