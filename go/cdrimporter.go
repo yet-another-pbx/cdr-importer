@@ -1402,7 +1402,7 @@ func option7(dbDetail databaseFunctionParameter) {
 	// Return to main menu if menu is input
 	mainMenu(voipCarrierID)
 
-	// Check rateCardIgnoreFirstLine is contained in the slice
+	// Check voipCarrierID is contained in the slice
 	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
 
 	if validateVoIPCarrierID == false {
