@@ -1151,7 +1151,7 @@ func option4(dbDetail databaseFunctionParameter) {
 	if validateNewName == true && validateCallDirection == true {
 
 		// Insert new VoIP carrier
-		dbDetail.connection.Exec("INSERT INTO voip_carrier (name) VALUES(?);", newName+" ("+callDirection+")")
+		dbDetail.connection.Exec("INSERT INTO voip_carrier (name, cdr_month_year_column) VALUES(?, ?);", newName+" ("+callDirection+")", "column_"+cdrMonthYearColumnNumber)
 
 		// Get VoIP carrier ID
 		dbDetail.column = "id"
@@ -1369,7 +1369,114 @@ func option6(dbDetail databaseFunctionParameter) {
 }
 
 // Option 7 function
-func option7() {
+func option7(dbDetail databaseFunctionParameter) {
+
+	var (
+		voipCarrierID  string
+		callDirection  string
+		enterMonthYear string
+	)
+
+	clearScreen()
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("          ╔═════╦══════════════════════════════════════════════════════╗")
+	fmt.Println("          ║ " + bgRed + textBoldWhite + "[7]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete a previsouly imported CDR from a VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ╔════╩═════╩═════════════════════════════╦════════════════════════╝")
+	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
+	fmt.Println("     ╚════════════════════════════════════════╝")
+
+	voipCarrierIDNameDraw(dbDetail)
+
+	_, voipCarrierIDList := voipCarrierSlice(dbDetail)
+
+	fmt.Print(textBoldBlack)
+	fmt.Print("     Enter the VoIP carrier ID [Valid input - numeric]: ")
+	fmt.Scanln(&voipCarrierID)
+
+	// If the user pressed the enter/return key then re-run the main function
+	if voipCarrierID == "" {
+		cdrimporter()
+	}
+
+	// Return to main menu if menu is input
+	mainMenu(voipCarrierID)
+
+	// Check rateCardIgnoreFirstLine is contained in the slice
+	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
+
+	if validateVoIPCarrierID == false {
+		// Invalid input message displays to the user
+		messageBox("The VoIP carrier ID does not exist ", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option7(dbDetail)
+		}
+	}
+
+	callDirectionList := callDirectionSlice()
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier CDR direction [Valid options - " + strings.Join(callDirectionList, ", ") + "]: ")
+	fmt.Scan(&callDirection)
+	// Return to main menu if menu is input
+	mainMenu(callDirection)
+
+	// Check callDirection is contained in the slice
+	validateCallDirection := slices.Contains(callDirectionList, callDirection)
+
+	if validateCallDirection == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, ", ")+" "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option7(dbDetail)
+		}
+	}
+
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier CDR month and year [Valid format - MM/YYYY]: ")
+	fmt.Scan(&enterMonthYear)
+	// Return to main menu if menu is input
+	mainMenu(enterMonthYear)
+
+	// Validate monthYear is a date
+	validateCDRMonthYear := validateInput(enterMonthYear, "monthYear")
+
+	if validateCDRMonthYear == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid month and year, please re-enter", bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option7(dbDetail)
+		}
+	}
+
+	// Retrieve the column needed
+	dbDetail.column = "cdr_month_year_column"
+	dbDetail.table = "voip_carrier"
+	dbDetail.columnWhere = "id"
+	dbDetail.columnWhereValue = voipCarrierID
+	monthYearColumn := selectWhere(dbDetail)
+
+	// Delete CDR
+	_, err := dbDetail.connection.Exec("DELETE FROM "+callDirection+"_cdr_"+voipCarrierID+" WHERE "+monthYearColumn+" = ?;", enterMonthYear)
+	if err != nil {
+		fmt.Println(err)
+	}
+
+	// Inform the user the CDR was deleted
+	messageBox("If CDR exsisted it has been deleted", bgGreen)
 	returnToMainMenu()
 }
 
@@ -1547,7 +1654,8 @@ func cdrimporter() {
 		dbDetail.connection = dbConnection
 		option6(dbDetail)
 	} else if option == "7" {
-		option7()
+		dbDetail.connection = dbConnection
+		option7(dbDetail)
 	} else if option == "8" {
 		option8()
 	} else if option == "9" {
@@ -1568,3 +1676,4 @@ func main() {
 
 // Contributor(s):
 // Elliot Michael Keavney
+
