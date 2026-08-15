@@ -407,9 +407,7 @@ func makeItemisedCDRView(dbDetail databaseFunctionParameter, sqlDetail sqlFuncti
 		IFNULL(yap.view___invoice_item.customer_id, 'NO CUSTOMER') AS yap_customer_id,
 		IFNULL(yap.view___invoice_item.customer_name, 'NO CUSTOMER') AS yap_customer_name,
 		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_tag,
-		IFNULL(yap.view___invoice_item.service_product_name, '') AS yap_service_product_name,
-		IFNULL(yap.view___invoice_item.customer_uk_based, '') AS yap_uk_based,
-		IFNULL(yap.view___invoice_item.customer_reselling_minutes, '') AS yap_reselling_minutes,
+		IFNULL(yap.view___invoice_item.service_product_name, '') AS yap_service_product_name,		
 		IFNULL(yap.view___invoice_item.invoice_item_sales_tax_rate, '') AS yap_invoice_item_sales_tax_rate,
 		IFNULL(yap.view___invoice_item.invoice_item_sales_tax_status, '') AS yap_invoice_item_sales_tax_status,
 		cdr_importer.view___` + sqlDetail.callDirection + `_cdr_rate_card_` + sqlDetail.voipCarrierID + `.cdr_number_dialled,
@@ -436,8 +434,6 @@ func makeTotalCDRView(dbDetail databaseFunctionParameter, sqlDetail sqlFunctionP
   		yap_customer_name,
   		cdr_tag,
   		yap_service_product_name,
-		yap_uk_based,
-		yap_reselling_minutes,
   		yap_invoice_item_sales_tax_rate,
   		yap_invoice_item_sales_tax_status,
   		cdr_month_year,
@@ -523,6 +519,9 @@ func option0(dbDetail databaseFunctionParameter) {
 func option1(dbDetail databaseFunctionParameter) {
 
 	var (
+		voipCarrierID                                   string
+		callDirection                                   string
+		enterMonthYear                                  string
 		yapCustomerID                                   string
 		yapCustomerName                                 string
 		cdrTag                                          string
@@ -533,18 +532,10 @@ func option1(dbDetail databaseFunctionParameter) {
 		cdrMonthYear                                    string
 		noMinimumChargeForCallDuration                  string
 		minimumChargeForCallDurationBelow60Seconds      string
-		yapUKBased                                      string
-		yapResellingMinutes                             string
 		yapInvoiceItemSalesTaxRate                      string
 		yapInvoiceItemSalesTaxStatus                    string
 		totalNoMinimumChargeForCallDuration             string
 		totalMinimumChargeForCallDurationBelow60Seconds string
-	)
-
-	var (
-		voipCarrierID  string
-		callDirection  string
-		enterMonthYear string
 	)
 
 	clearScreen()
@@ -636,8 +627,6 @@ func option1(dbDetail databaseFunctionParameter) {
 							 yap_customer_id,
 							 yap_customer_name,
 							 cdr_tag,
-							 yap_uk_based,
-							 yap_reselling_minutes,
 							 yap_invoice_item_sales_tax_rate,
 							 yap_invoice_item_sales_tax_status,
 							 cdr_month_year,
@@ -668,9 +657,9 @@ func option1(dbDetail databaseFunctionParameter) {
 	fmt.Println("          ║ " + bgBlue + textBoldWhite + "[1]" + resetColour + textBoldBlack + " ║ " + bgBlue + textBoldWhite + "List a CDR from a particular month and year for a VoIP carrier" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╔════╩═════╩════════════╦═══════════════════════════════════════════════════╝")
 	fmt.Println("     ║ Total Call Charge CDR ║")
-	fmt.Println("     ╠═══════════════════╦═══╩════════════════════════════╦═══════════════════════╦═══════╦═══════════╦══════════╦════════════╦═══════════╦═══════════════════════════════╦═══════════════════════════════╗")
-	fmt.Println("     ║        YAP        ║               YAP              ║          TAG          ║  UK   ║ Reselling ║  Sales   ║   Sales    ║ MonthYear ║    Total no Minimum Charge    ║ Total Minimum Charge For Call ║")
-	fmt.Println("     ║    Customer ID    ║          Customer Name         ║ (Same on YAP Invoice) ║ Based ║  Minutes  ║ Tax Rate ║ Tax Status ║  MM-YYYY  ║       For Call Duration       ║   Duration Below 60 Seconds   ║")
+	fmt.Println("     ╠═══════════════════╦═══╩════════════════════════════╦═══════════════════════╦══════════╦════════════╦═══════════╦═══════════════════════════════╦═══════════════════════════════╗")
+	fmt.Println("     ║        YAP        ║               YAP              ║          TAG          ║  Sales   ║   Sales    ║ MonthYear ║    Total no Minimum Charge    ║ Total Minimum Charge For Call ║")
+	fmt.Println("     ║    Customer ID    ║          Customer Name         ║ (Same on YAP Invoice) ║ Tax Rate ║ Tax Status ║  MM-YYYY  ║       For Call Duration       ║   Duration Below 60 Seconds   ║")
 
 	for option1ASQL.Next() {
 
@@ -678,8 +667,6 @@ func option1(dbDetail databaseFunctionParameter) {
 			&yapCustomerID,
 			&yapCustomerName,
 			&cdrTag,
-			&yapUKBased,
-			&yapResellingMinutes,
 			&yapInvoiceItemSalesTaxRate,
 			&yapInvoiceItemSalesTaxStatus,
 			&cdrMonthYear,
@@ -692,15 +679,15 @@ func option1(dbDetail databaseFunctionParameter) {
 			panic(err)
 		}
 
-		fmt.Println("     ╠═══════════════════╬════════════════════════════════╬═══════════════════════╬═══════╬═══════════╬══════════╬════════════╬═══════════╬═══════════════════════════════╬═══════════════════════════════╣")
+		fmt.Println("     ╠═══════════════════╬════════════════════════════════╬═══════════════════════╬══════════╬════════════╬═══════════╬═══════════════════════════════╬═══════════════════════════════╣")
 		// If no customer highlight in red
 		if yapCustomerID == "NO CUSTOMER" {
-			fmt.Println("     ║ " + bgRed + textBoldWhite + yapCustomerID + resetColour + textBoldBlack + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + bgRed + textBoldWhite + yapCustomerName + resetColour + textBoldBlack + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + yapUKBased + strings.Repeat(" ", 6-len(yapUKBased)) + "║ " + yapResellingMinutes + strings.Repeat(" ", 10-len(yapResellingMinutes)) + "║ " + yapInvoiceItemSalesTaxRate + strings.Repeat(" ", 9-len(yapInvoiceItemSalesTaxRate)) + "║ " + yapInvoiceItemSalesTaxStatus + strings.Repeat(" ", 11-len(yapInvoiceItemSalesTaxStatus)) + "║ " + cdrMonthYear + strings.Repeat(" ", 10-len(cdrMonthYear)) + "║ " + totalNoMinimumChargeForCallDuration + strings.Repeat(" ", 30-len(totalNoMinimumChargeForCallDuration)) + "║ " + totalMinimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 30-len(totalMinimumChargeForCallDurationBelow60Seconds)) + "║")
+			fmt.Println("     ║ " + bgRed + textBoldWhite + yapCustomerID + resetColour + textBoldBlack + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + bgRed + textBoldWhite + yapCustomerName + resetColour + textBoldBlack + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + yapInvoiceItemSalesTaxRate + strings.Repeat(" ", 9-len(yapInvoiceItemSalesTaxRate)) + "║ " + yapInvoiceItemSalesTaxStatus + strings.Repeat(" ", 11-len(yapInvoiceItemSalesTaxStatus)) + "║ " + cdrMonthYear + strings.Repeat(" ", 10-len(cdrMonthYear)) + "║ " + totalNoMinimumChargeForCallDuration + strings.Repeat(" ", 30-len(totalNoMinimumChargeForCallDuration)) + "║ " + totalMinimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 30-len(totalMinimumChargeForCallDurationBelow60Seconds)) + "║")
 		} else {
-			fmt.Println("     ║ " + yapCustomerID + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + yapCustomerName + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + yapUKBased + strings.Repeat(" ", 6-len(yapUKBased)) + "║ " + yapResellingMinutes + strings.Repeat(" ", 10-len(yapResellingMinutes)) + "║ " + yapInvoiceItemSalesTaxRate + "%" + strings.Repeat(" ", 8-len(yapInvoiceItemSalesTaxRate)) + "║ " + yapInvoiceItemSalesTaxStatus + strings.Repeat(" ", 11-len(yapInvoiceItemSalesTaxStatus)) + "║ " + cdrMonthYear + strings.Repeat(" ", 10-len(cdrMonthYear)) + "║ " + totalNoMinimumChargeForCallDuration + strings.Repeat(" ", 30-len(totalNoMinimumChargeForCallDuration)) + "║ " + totalMinimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 30-len(totalMinimumChargeForCallDurationBelow60Seconds)) + "║")
+			fmt.Println("     ║ " + yapCustomerID + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + yapCustomerName + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + yapInvoiceItemSalesTaxRate + "%" + strings.Repeat(" ", 8-len(yapInvoiceItemSalesTaxRate)) + "║ " + yapInvoiceItemSalesTaxStatus + strings.Repeat(" ", 11-len(yapInvoiceItemSalesTaxStatus)) + "║ " + cdrMonthYear + strings.Repeat(" ", 10-len(cdrMonthYear)) + "║ " + totalNoMinimumChargeForCallDuration + strings.Repeat(" ", 30-len(totalNoMinimumChargeForCallDuration)) + "║ " + totalMinimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 30-len(totalMinimumChargeForCallDurationBelow60Seconds)) + "║")
 		}
 	}
-	fmt.Println("     ╚═══════════════════╩════════════════════════════════╩═══════════════════════╩═══════╩═══════════╩══════════╩════════════╩═══════════╩═══════════════════════════════╩═══════════════════════════════╝")
+	fmt.Println("     ╚═══════════════════╩════════════════════════════════╩═══════════════════════╩══════════╩════════════╩═══════════╩═══════════════════════════════╩═══════════════════════════════╝")
 	fmt.Println(resetColour)
 
 	option1BSQL, err := dbDetail.connection.Query(`SELECT
@@ -950,7 +937,7 @@ func option3(dbDetail databaseFunctionParameter) {
 		}
 
 		fmt.Println("     ╠═════════════════╬═════════════════════════════════════════════════════╬═════════════════════╬══════════════════════════════════════╣")
-		fmt.Println("     ║ " + voipCarrierID + strings.Repeat(" ", 16-len(voipCarrierID)) + "║ " + voipCarrierName + strings.Repeat(" ", 52-len(voipCarrierName)) + "║ " + cdrMonthYear + "             ║ " + yapCDRInsertLogDateTimeAdded + "               ║")
+		fmt.Println("     ║ " + voipCarrierID + strings.Repeat(" ", 16-len(voipCarrierID)) + "║ " + voipCarrierName + strings.Repeat(" ", 52-len(voipCarrierName)) + "║ " + cdrMonthYear + "             ║ " + yapCDRInsertLogDateTimeAdded + "                  ║")
 
 	}
 	fmt.Println("     ╚═════════════════╩═════════════════════════════════════════════════════╩═════════════════════╩══════════════════════════════════════╝")
@@ -1247,7 +1234,7 @@ func option4(dbDetail databaseFunctionParameter) {
 	if validateNewName == true && validateCallDirection == true {
 
 		// Insert new VoIP carrier
-		dbDetail.connection.Exec("INSERT INTO voip_carrier (name, cdr_month_year_column) VALUES(?, ?);", newName+" ("+callDirection+")", "column_"+cdrMonthYearColumnNumber)
+		dbDetail.connection.Exec("INSERT INTO cdr_importer.voip_carrier (name, cdr_month_year_column) VALUES(?, ?);", newName+" ("+callDirection+")", "column_"+cdrMonthYearColumnNumber)
 
 		// Get VoIP carrier ID
 		dbDetail.column = "id"
@@ -1569,10 +1556,7 @@ func option7(dbDetail databaseFunctionParameter) {
 	monthYearColumn := selectWhere(dbDetail)
 
 	// Delete CDR
-	_, err := dbDetail.connection.Exec("DELETE FROM "+callDirection+"_cdr_"+voipCarrierID+" WHERE "+monthYearColumn+" = ?;", enterMonthYear)
-	if err != nil {
-		fmt.Println(err)
-	}
+	dbDetail.connection.Exec("DELETE FROM cdr_importer."+callDirection+"_cdr_"+voipCarrierID+" WHERE "+monthYearColumn+" = ?;", enterMonthYear)
 
 	// Inform the user the CDR was deleted
 	messageBox("If CDR exsisted it has been deleted", bgGreen)
@@ -1585,7 +1569,204 @@ func option8() {
 }
 
 // Option 9 function
-func option9() {
+// Insert a re-rated CDR for a VoIP carrier from a specific month into YAP
+func option9(dbDetail databaseFunctionParameter) {
+
+	var (
+		voipCarrierID                                   string
+		callDirection                                   string
+		enterMonthYear                                  string
+		perSecondBilling                                string
+		yapCustomerID                                   string
+		cdrTag                                          string
+		yapServiceProductName                           string
+		yapInvoiceItemSalesTaxRate                      string
+		yapInvoiceItemSalesTaxStatus                    string
+		totalNoMinimumChargeForCallDuration             string
+		totalMinimumChargeForCallDurationBelow60Seconds string
+	)
+
+	clearScreen()
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("          ╔═════╦═════════════════════════════════════════════════════════════════════════╗")
+	fmt.Println("          ║ " + bgGreen + textBoldWhite + "[9]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Insert a re-rated CDR for a VoIP carrier from a specific month into YAP" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ╔════╩═════╩═════════════════════════════╦═══════════════════════════════════════════╝")
+	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
+	fmt.Println("     ╚════════════════════════════════════════╝")
+
+	voipCarrierIDNameDraw(dbDetail)
+
+	_, voipCarrierIDList := voipCarrierSlice(dbDetail)
+
+	fmt.Print(textBoldBlack)
+	fmt.Print("     Enter the VoIP carrier ID [Valid input - numeric]: ")
+	fmt.Scanln(&voipCarrierID)
+
+	// If the user pressed the enter/return key then re-run the main function
+	if voipCarrierID == "" {
+		cdrimporter()
+	}
+
+	// Return to main menu if menu is input
+	mainMenu(voipCarrierID)
+
+	// Check rateCardIgnoreFirstLine is contained in the slice
+	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
+
+	if validateVoIPCarrierID == false {
+		// Invalid input message displays to the user
+		messageBox("The VoIP carrier ID does not exist ", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option9(dbDetail)
+		}
+	}
+
+	callDirectionList := callDirectionSlice()
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier re-rated CDR direction [Valid options - " + strings.Join(callDirectionList, ", ") + "]: ")
+	fmt.Scan(&callDirection)
+	// Return to main menu if menu is input
+	mainMenu(callDirection)
+
+	// Check callDirection is contained in the slice
+	validateCallDirection := slices.Contains(callDirectionList, callDirection)
+
+	if validateCallDirection == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option, please re-enter either "+(strings.Join(callDirectionList, ", ")+" "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option9(dbDetail)
+		}
+	}
+
+	fmt.Println("")
+	fmt.Print("     Enter the VoIP carrier re-rated CDR month and year [Valid format - MM/YYYY]: ")
+	fmt.Scan(&enterMonthYear)
+	// Return to main menu if menu is input
+	mainMenu(enterMonthYear)
+
+	// Validate monthYear is a date
+	validateCDRMonthYear := validateInput(enterMonthYear, "monthYear")
+
+	if validateCDRMonthYear == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid month and year, please re-enter", bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option9(dbDetail)
+		}
+	}
+
+	yesNoList := yesNoSlice()
+	fmt.Println("")
+	fmt.Println("     Bill calls with 60/1 billing - if the input is yes the first 60 seconds in a call are always billed as 1 full minute even if the call was less than 60 seconds")
+	fmt.Print("     if the input is no on this option all seconds in a call are billed per second even if a call is below 1 minute (60 seconds) [Valid options " + strings.Join(yesNoList, ", ") + "]: ")
+	fmt.Scan(&perSecondBilling)
+	// Return to main menu if menu is input
+	mainMenu(perSecondBilling)
+
+	// Check cdrIgnoreFirstLine is contained in the slice
+	validatePerSecondBilling := slices.Contains(yesNoList, perSecondBilling)
+
+	if validatePerSecondBilling == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid option for 60/1 billing, please re-enter with either"+strings.Join(yesNoList, ", "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option9(dbDetail)
+		}
+	}
+
+	option9SQL, err := dbDetail.connection.Query(`SELECT
+                                                        yap_customer_id,
+                                                        cdr_tag,
+                                                        yap_service_product_name,
+                                                        yap_invoice_item_sales_tax_rate,
+                                                        yap_invoice_item_sales_tax_status,
+                                                        total_no_minimum_charge_for_call_duration,
+                                                        total_minimum_charge_for_call_duration_below_60_seconds
+                                                      FROM
+                                                        cdr_importer.view___`+callDirection+`_total_cdr_`+voipCarrierID+`
+                                                      WHERE
+                                                        cdr_month_year = ?;`, enterMonthYear)
+
+	// Error
+	if err != nil {
+		// Invalid input message displays to the user
+		messageBox("The re-rated CDR does not exist", bgYellow)
+		fmt.Print("     Press the enter/return key to continue ", err)
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option9(dbDetail)
+		}
+	}
+
+	for option9SQL.Next() {
+
+		err = option9SQL.Scan(
+			&yapCustomerID,
+			&cdrTag,
+			&yapServiceProductName,
+			&yapInvoiceItemSalesTaxRate,
+			&yapInvoiceItemSalesTaxStatus,
+			&totalNoMinimumChargeForCallDuration,
+			&totalMinimumChargeForCallDurationBelow60Seconds,
+		)
+
+		// Error
+		if err != nil {
+			panic(err)
+		}
+
+		if yapCustomerID == "NO CUSTOMER" {
+			//Do Nothing
+		} else {
+
+			var serviceProductName string
+
+			if yapServiceProductName == "Inbound Minutes Tag ✎" {
+				serviceProductName = "Total Inbound Minutes ✆"
+			} else if yapServiceProductName == "Outbound Minutes Tag ✎" {
+				serviceProductName = "Total Outbound Minutes ✆"
+			}
+
+			var sellPrice string
+
+			if perSecondBilling == "yes" || perSecondBilling == "yes" || perSecondBilling == "Yes" || perSecondBilling == "YES" || perSecondBilling == "y" || perSecondBilling == "Y" {
+				sellPrice = totalMinimumChargeForCallDurationBelow60Seconds
+			} else if perSecondBilling == "no" || perSecondBilling == "no" || perSecondBilling == "No" || perSecondBilling == "NO" || perSecondBilling == "n" || perSecondBilling == "N" {
+				sellPrice = totalNoMinimumChargeForCallDuration
+			}
+
+			// Insert re-rated CDRs into YAP
+			dbDetail.connection.Exec("INSERT INTO yap.invoice_item (customer_id, pbx_id, tag, service_product_name, sell_price, sales_tax_rate, sales_tax_status, bill_item_once, item_on_hold) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);", yapCustomerID, 1, enterMonthYear+" "+callDirection+" minutes for "+cdrTag, serviceProductName, sellPrice, yapInvoiceItemSalesTaxRate, yapInvoiceItemSalesTaxStatus, "yes", "no")
+
+			// Add to log to the yap_cdr_insert_log table
+			dbDetail.connection.Exec("INSERT INTO cdr_importer.yap_cdr_insert_log (voip_carrier_id, cdr_month_year) VALUES(?, ?);", voipCarrierID, enterMonthYear)
+		}
+	}
+	// Inform the user the re-rated CDR was inserted into YAP
+	messageBox("Re-rated CDR has been inserted into YAP", bgGreen)
 	returnToMainMenu()
 }
 
@@ -1634,9 +1815,9 @@ func cdrimporter() {
 	fmt.Println("     ║ " + bgRed + textBoldWhite + "[7]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete a previsouly imported CDR from a VoIP carrier" + resetColour + " ║")
 	fmt.Println("     ╠═════╬══════════════════════════════════════════════════════╩══════════════════════════╗")
 	fmt.Println("     ║ " + bgRed + textBoldWhite + "[8]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete an existing VoIP carrier, all associated CDRs and inserted into YAP logs" + resetColour + " ║")
-	fmt.Println("     ╠═════╬═════════════════════════════════════════════════════════════════╦═══════════════╝")
-	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[9]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Insert a CDR for a particular month for a VoIP carrier into YAP" + resetColour + " ║")
-	fmt.Println("     ╚═════╩═════════════════════════════════════════════════════════════════╝")
+	fmt.Println("     ╠═════╬═════════════════════════════════════════════════════════════════════════╦═══════╝")
+	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[9]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Insert a re-rated CDR for a VoIP carrier from a specific month into YAP" + resetColour + " ║")
+	fmt.Println("     ╚═════╩═════════════════════════════════════════════════════════════════════════╝")
 	fmt.Println("")
 	fmt.Print("     " + textBoldBlack + "Select an option [0-9]: ")
 	var option string
@@ -1758,7 +1939,8 @@ func cdrimporter() {
 	} else if option == "8" {
 		option8()
 	} else if option == "9" {
-		option9()
+		dbDetail.connection = dbConnection
+		option9(dbDetail)
 	} else {
 		messageBox("Invalid option - enter option [0-9] or exit", bgYellow)
 		returnToMainMenu()
