@@ -201,6 +201,7 @@ mysql -u root -D yap -e "SOURCE /root/cdr-importer/mariadb/cdr-importer.sql;";
 # Grant privileges for cdr-importer MariaDB user
 mysql -u root -e "GRANT SELECT, INSERT, UPDATE, DELETE, CREATE, DROP, CREATE VIEW, INDEX ON cdr_importer.* TO 'cdr-importer'@'localhost';";
 mysql -u root -e "GRANT SELECT ON yap.view___invoice_item TO 'cdr-importer'@'localhost';";
+mysql -u root -e "GRANT INSERT ON yap.invoice_item TO 'cdr-importer'@'localhost';";
 mysql -u root -e "FLUSH PRIVILEGES;";
 
 #----------------------------------------------------------------------
