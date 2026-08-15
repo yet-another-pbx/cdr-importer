@@ -1611,7 +1611,7 @@ func option9(dbDetail databaseFunctionParameter) {
 	// Return to main menu if menu is input
 	mainMenu(voipCarrierID)
 
-	// Check rateCardIgnoreFirstLine is contained in the slice
+	// Check voipCarrierID is contained in the slice
 	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
 
 	if validateVoIPCarrierID == false {
@@ -1761,7 +1761,7 @@ func option9(dbDetail databaseFunctionParameter) {
 			// Insert re-rated CDRs into YAP
 			dbDetail.connection.Exec("INSERT INTO yap.invoice_item (customer_id, pbx_id, tag, service_product_name, sell_price, sales_tax_rate, sales_tax_status, bill_item_once, item_on_hold) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);", yapCustomerID, 1, enterMonthYear+" "+callDirection+" minutes for "+cdrTag, serviceProductName, sellPrice, yapInvoiceItemSalesTaxRate, yapInvoiceItemSalesTaxStatus, "yes", "no")
 
-			// Add to log to the yap_cdr_insert_log table
+			// Add log to the yap_cdr_insert_log table
 			dbDetail.connection.Exec("INSERT INTO cdr_importer.yap_cdr_insert_log (voip_carrier_id, cdr_month_year) VALUES(?, ?);", voipCarrierID, enterMonthYear)
 		}
 	}
