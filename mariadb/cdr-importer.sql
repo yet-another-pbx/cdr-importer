@@ -4,6 +4,9 @@ CREATE TABLE `cdr_importer`.`voip_carrier` (
   `id` SMALLINT UNSIGNED AUTO_INCREMENT NOT NULL,
   `name` VARCHAR(50) NOT NULL,
   `cdr_month_year_column` VARCHAR(9) NOT NULL,
+  `rate_card_charge_code_column` VARCHAR(9) NOT NULL,
+  `rate_card_price_per_minute_column` VARCHAR(9) NOT NULL,
+  `rate_card_price_per_call_column` VARCHAR(9) NOT NULL,
   `date_time_added` DATETIME DEFAULT NOW() NOT NULL,
   UNIQUE (`name`),
   PRIMARY KEY(`id`)
