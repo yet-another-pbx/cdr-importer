@@ -487,7 +487,7 @@ func voipCarrierIDInput(dbDetail databaseFunctionParameter, optionNumber string)
 	// Return to main menu if menu is input
 	mainMenu(voipCarrierID)
 
-	// Check rateCardIgnoreFirstLine is contained in the slice
+	// Check the value for voipCarrierID is contained in the slice
 	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
 
 	if validateVoIPCarrierID == false {
@@ -623,7 +623,7 @@ func enterMonthYearInput(dbDetail databaseFunctionParameter, optionNumber string
 	return enterMonthYear
 }
 
-// Function to input a path for a CSV file, can be a absolute or relative path
+// Function to input a path for a CSV file, can be a absolute or a relative path
 func csvImportPathInput(dbDetail databaseFunctionParameter, optionNumber string) string {
 
 	var csvImportPath string
@@ -1033,7 +1033,7 @@ func option2(dbDetail databaseFunctionParameter) {
 }
 
 // Option 3 function
-// Log of re-rated CDRs previously inserted into (Yet Another PBX)
+// Log of re-rated CDRs previously inserted into YAP (Yet Another PBX)
 func option3(dbDetail databaseFunctionParameter) {
 
 	var (
@@ -1366,10 +1366,10 @@ func option4(dbDetail databaseFunctionParameter) {
 		// Create itemised CDR view
 		makeItemisedCDRView(dbDetail, sqlDetail)
 
-		// Create total CDR view, used mostly for YAP invoice_item
+		// Create total CDR view, used mostly for the YAP (Yet Another PBX) invoice_item table
 		makeTotalCDRView(dbDetail, sqlDetail)
 
-		// Import rate card CSV into VoIP carrier rate card table
+		// Import a rate card into the VoIP carrier rate card table
 		dbDetail.table = callDirection + "_rate_card_" + voipCarrierID
 		sqlDetail.filePath = rateCardFilePath
 
@@ -1418,7 +1418,7 @@ func option5(dbDetail databaseFunctionParameter) {
 	fmt.Scanln(&rateCardOption)
 	fmt.Println(resetColour)
 
-	// Values allowed for option
+	// Values allowed for rateCardOption
 	var rateCardOptionList = []string{"", "A", "B", "a", "b", "menu", "Menu", "MENU"}
 	validRateCardOption := slices.Contains(rateCardOptionList, rateCardOption)
 
@@ -1477,7 +1477,7 @@ func option5(dbDetail databaseFunctionParameter) {
 
 		importCSV(dbDetail, sqlDetail)
 
-		// Inform the user the rate card was replaced
+		// Inform the user the rate card has been replaced
 		messageBox("Call rate card has been replaced ", bgGreen)
 		returnToMainMenu()
 
@@ -1567,7 +1567,7 @@ func option5(dbDetail databaseFunctionParameter) {
 			}
 		}
 
-		// Retrieve rate card chargeCode column number from the voip_carrier table
+		// Retrieve the rate card charge code column number from the voip_carrier table
 		dbDetail.column = "rate_card_charge_code_column"
 		dbDetail.table = "voip_carrier"
 		dbDetail.columnWhere = "id"
@@ -1583,7 +1583,7 @@ func option5(dbDetail databaseFunctionParameter) {
 			dbDetail.columnWhereValue = voipCarrierID
 			rateCardPricePerMinuteColumn := selectWhere(dbDetail)
 
-			// Update the charge code with a new rate
+			// Update the row with a new rate
 			dbDetail.connection.Exec("UPDATE cdr_importer."+callDirection+"_rate_card_"+voipCarrierID+" SET "+rateCardPricePerMinuteColumn+" = ? WHERE "+rateCardChargeCodeColumn+" = ?;", newRate, chargeCode)
 
 			// Inform the user the rate card per minute price has been updated
