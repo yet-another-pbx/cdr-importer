@@ -11,4 +11,4 @@ CDR Importer is a CLI tool used to import CDR's, re-rate them and insert them as
 <br>
 
 >[!IMPORTANT]
->All third-party product and/or company names and logos are trademarks™ or registered® trademarks and remain the property of their respective holders/owners. Unless specifically identified as such, use of third party trademarks does not imply any affiliation with or endorsement between Yet Another PBX (YAP) and the owners of those trademarks.
+>All third-party product and/or company names and logos are trademarks™ or registered® trademarks and remain the property of their respective holders/owners. Unless specifically identified as such, use of third party trademarks does not imply any affiliation with or endorsement between CDR Importer and the owners of those trademarks.
