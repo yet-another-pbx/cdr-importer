@@ -487,7 +487,7 @@ func voipCarrierIDInput(dbDetail databaseFunctionParameter, optionNumber string)
 	// Return to main menu if menu is input
 	mainMenu(voipCarrierID)
 
-	// Check the value for voipCarrierID is contained in the slice
+	// Check the voipCarrierID value is contained in the slice
 	validateVoIPCarrierID := slices.Contains(voipCarrierIDList, voipCarrierID)
 
 	if validateVoIPCarrierID == false {
@@ -533,7 +533,7 @@ func callDirectionInput(dbDetail databaseFunctionParameter, optionNumber string)
 	fmt.Println("")
 	fmt.Print("     Enter the VoIP carrier CDR direction [Valid options - " + strings.Join(callDirectionList, ", ") + "]: ")
 	fmt.Scan(&callDirection)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(callDirection)
 
 	// Check callDirection is contained in the slice
@@ -672,7 +672,7 @@ func csvImportPathInput(dbDetail databaseFunctionParameter, optionNumber string)
 	return csvImportPath
 }
 
-// Function to provide an option to ignore the first line of CSV file when importing
+// Function to provide an option to ignore the first line of the CSV file when importing
 func csvIgnoreFirstLineOption(dbDetail databaseFunctionParameter, optionNumber string) string {
 
 	var csvIgnoreFirstLine string
@@ -1123,7 +1123,7 @@ func option4(dbDetail databaseFunctionParameter) {
 	fmt.Print("     Enter the VoIP carrier name [Valid input - alphanumeric up to 50 characters long]: ")
 	fmt.Scanln(&newName)
 
-	// If the user pressed the enter/return key then re-run the main function
+	// If the user pressed the enter/return key then re-run the main menu
 	if newName == "" {
 		cdrimporter()
 	}
@@ -1191,49 +1191,49 @@ func option4(dbDetail databaseFunctionParameter) {
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the tag, usally the customers phone number but could be a SIP trunk username or ID [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrTagColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrTagColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the phone number dialled [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrNumberDialledColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrNumberDialledColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the call record description [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrDescriptionColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrDescriptionColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the charge code [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrChargeCodeColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrChargeCodeColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the call duration [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrDurationColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrDurationColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the date, if the date and time is combined in one column this option will also take date and time values [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrDateTimeColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrDateTimeColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the time, if the date and time is combined in one column enter n/a (not applicable) for this option [Valid input - Number 1-50, n/a]: ")
 	fmt.Scan(&cdrTimeColumn)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrTimeColumn)
 
 	fmt.Println("")
 	fmt.Print("     Enter the CDR column number for the month year [Valid input - Number 1-50]: ")
 	fmt.Scan(&cdrMonthYearColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(cdrMonthYearColumnNumber)
 
 	// Validate input for CDR column numbers
@@ -1273,25 +1273,25 @@ func option4(dbDetail databaseFunctionParameter) {
 	fmt.Println("")
 	fmt.Print("     Enter the rate card column number for the description [Valid input - Number 1-50]: ")
 	fmt.Scan(&rateCardDescriptionColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(rateCardDescriptionColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the rate card column number for the charge code [Valid input - Number 1-50]: ")
 	fmt.Scan(&rateCardChargeCodeColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(rateCardChargeCodeColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the rate card column number for the price per minute [Valid input - Number 1-50]: ")
 	fmt.Scan(&rateCardPricePerMinuteColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(rateCardPricePerMinuteColumnNumber)
 
 	fmt.Println("")
 	fmt.Print("     Enter the rate card column number for the price per call [Valid input - Number 1-50]: ")
 	fmt.Scan(&rateCardPricePerCallColumnNumber)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(rateCardPricePerCallColumnNumber)
 
 	// Validate input for rate card column numbers
@@ -1428,7 +1428,7 @@ func option5(dbDetail databaseFunctionParameter) {
 		returnToMainMenu()
 	}
 
-	// If the user pressed the enter/return key then re-run the main function
+	// If the user pressed the enter/return key return to the main menu
 	if rateCardOption == "" {
 		cdrimporter()
 	}
@@ -1465,7 +1465,7 @@ func option5(dbDetail databaseFunctionParameter) {
 
 		var sqlDetail sqlFunctionParameter
 
-		// Import rate card CSV into VoIP carrier rate card table
+		// Import the rate card into the VoIP carrier rate card table
 		dbDetail.table = callDirection + "_rate_card_" + voipCarrierID
 		sqlDetail.filePath = rateCardFilePath
 
@@ -1503,7 +1503,7 @@ func option5(dbDetail databaseFunctionParameter) {
 		fmt.Print("     Enter the charge code [Valid input - alphanumeric up to 50 characters long]: ")
 		fmt.Scanln(&chargeCode)
 
-		// Return to main menu if menu is input
+		// Return to the main menu if menu is input
 		mainMenu(chargeCode)
 
 		// Validate new name input
@@ -1548,7 +1548,7 @@ func option5(dbDetail databaseFunctionParameter) {
 		fmt.Print("     Enter the new rate [Valid input - numeric decimal up to 12 numbers long]: ")
 		fmt.Scanln(&newRate)
 
-		// Return to main menu if menu is input
+		// Return to the main menu if menu is input
 		mainMenu(newRate)
 
 		// Validate the newRate input
@@ -1576,7 +1576,7 @@ func option5(dbDetail databaseFunctionParameter) {
 
 		if rateOption == "minute" || rateOption == "Minute" || rateOption == "Min" || rateOption == "min" || rateOption == "m" || rateOption == "M" {
 
-			// Retrieve rate card per minute column number from the voip_carrier table
+			// Retrieve the rate card per minute column number from the voip_carrier table
 			dbDetail.column = "rate_card_price_per_minute_column"
 			dbDetail.table = "voip_carrier"
 			dbDetail.columnWhere = "id"
@@ -1592,7 +1592,7 @@ func option5(dbDetail databaseFunctionParameter) {
 
 		} else if rateOption == "call" || rateOption == "Call" || rateOption == "c" || rateOption == "C" {
 
-			// Retrieve rate card per card column number from the voip_carrier table
+			// Retrieve the rate card per card column number from the voip_carrier table
 			dbDetail.column = "rate_card_price_per_call_column"
 			dbDetail.table = "voip_carrier"
 			dbDetail.columnWhere = "id"
@@ -1684,7 +1684,7 @@ func option7(dbDetail databaseFunctionParameter) {
 	dbDetail.columnWhereValue = voipCarrierID
 	monthYearColumn := selectWhere(dbDetail)
 
-	// Delete CDR
+	// Delete the CDR
 	dbDetail.connection.Exec("DELETE FROM cdr_importer."+callDirection+"_cdr_"+voipCarrierID+" WHERE "+monthYearColumn+" = ?;", enterMonthYear)
 
 	// Inform the user the CDR was deleted
@@ -1733,7 +1733,7 @@ func option8(dbDetail databaseFunctionParameter) {
 	// Return to main menu if menu is input
 	mainMenu(confirm)
 
-	// Check the value for voipCarrierID is contained in the slice
+	// Check the value for confirm is contained in the slice
 	validateConfirm := slices.Contains(confirmList, confirm)
 
 	if validateConfirm == false {
@@ -1754,7 +1754,7 @@ func option8(dbDetail databaseFunctionParameter) {
 		// Delete records from the yap_cdr_insert_log table
 		dbDetail.connection.Exec("DELETE FROM cdr_importer.yap_cdr_insert_log WHERE voip_carrier_id = ?;", voipCarrierID)
 
-		// Delete record from the voip_carrier table
+		// Delete the record from the voip_carrier table
 		dbDetail.connection.Exec("DELETE FROM cdr_importer.voip_carrier WHERE id = ?;", voipCarrierID)
 
 		// Drop the view___[CALL DIRECTION]_total_cdr_[CARRIER ID] view
@@ -1824,7 +1824,7 @@ func option9(dbDetail databaseFunctionParameter) {
 	fmt.Println("     Bill calls with 60/1 billing - if the input is yes the first 60 seconds in a call are always billed as 1 full minute even if the call was less than 60 seconds")
 	fmt.Print("     if the input is no on this option all seconds in a call are billed per second even if a call is below 1 minute (60 seconds) [Valid options " + strings.Join(yesNoList, ", ") + "]: ")
 	fmt.Scan(&perSecondBilling)
-	// Return to main menu if menu is input
+	// Return to the main menu if menu is input
 	mainMenu(perSecondBilling)
 
 	// Check cdrIgnoreFirstLine is contained in the slice
@@ -1906,7 +1906,7 @@ func option9(dbDetail databaseFunctionParameter) {
 				sellPrice = totalNoMinimumChargeForCallDuration
 			}
 
-			// Insert re-rated CDRs into YAP
+			// Insert the re-rated CDR into YAP
 			dbDetail.connection.Exec("INSERT INTO yap.invoice_item (customer_id, pbx_id, tag, service_product_name, sell_price, sales_tax_rate, sales_tax_status, bill_item_once, item_on_hold) VALUES(?, ?, ?, ?, ?, ?, ?, ?, ?);", yapCustomerID, 1, enterMonthYear+" "+callDirection+" minutes for "+cdrTag, serviceProductName, sellPrice, yapInvoiceItemSalesTaxRate, yapInvoiceItemSalesTaxStatus, "yes", "no")
 		}
 	}
@@ -1982,10 +1982,10 @@ func cdrimporter() {
 		returnToMainMenu()
 	}
 
-	// If user typed exit or quit then stop program
+	// If user typed exit or quit then stop the program
 	exit(option)
 
-	// If the user pressed the enter/return key then re-run the main function
+	// If the user pressed the enter/return key return to the main menu
 	if option == "" {
 		cdrimporter()
 	}
