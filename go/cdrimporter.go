@@ -1982,7 +1982,7 @@ func cdrimporter() {
 		returnToMainMenu()
 	}
 
-	// If user typed exit or quit then stop the program
+	// If the user typed exit or quit then stop the program
 	exit(option)
 
 	// If the user pressed the enter/return key return to the main menu
