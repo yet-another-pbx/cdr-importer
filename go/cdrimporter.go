@@ -1343,13 +1343,6 @@ func option4(dbDetail databaseFunctionParameter) {
 		sqlDetail.tableType = "rate_card"
 		makeTable(dbDetail, sqlDetail)
 
-		// Create rate card view
-		sqlDetail.rateCardDescriptionColumnNumber = rateCardDescriptionColumnNumber
-		sqlDetail.rateCardChargeCodeColumnNumber = rateCardChargeCodeColumnNumber
-		sqlDetail.rateCardPricePerMinuteColumnNumber = rateCardPricePerMinuteColumnNumber
-		sqlDetail.rateCardPricePerCallColumnNumber = rateCardPricePerCallColumnNumber
-		makeRateCardView(dbDetail, sqlDetail)
-
 		// Create CDR view
 		sqlDetail.cdrTagColumnNumber = cdrTagColumnNumber
 		sqlDetail.cdrNumberDialledColumnNumber = cdrNumberDialledColumnNumber
@@ -1359,6 +1352,13 @@ func option4(dbDetail databaseFunctionParameter) {
 		sqlDetail.cdrDateTimeColumnNumber = cdrDateTimeColumnNumber
 		sqlDetail.cdrMonthYearColumnNumber = cdrMonthYearColumnNumber
 		makeCDRView(dbDetail, sqlDetail)
+
+		// Create rate card view
+		sqlDetail.rateCardDescriptionColumnNumber = rateCardDescriptionColumnNumber
+		sqlDetail.rateCardChargeCodeColumnNumber = rateCardChargeCodeColumnNumber
+		sqlDetail.rateCardPricePerMinuteColumnNumber = rateCardPricePerMinuteColumnNumber
+		sqlDetail.rateCardPricePerCallColumnNumber = rateCardPricePerCallColumnNumber
+		makeRateCardView(dbDetail, sqlDetail)
 
 		// Create CDR rate card view
 		makeCDRRateCardView(dbDetail, sqlDetail)
@@ -1695,7 +1695,97 @@ func option7(dbDetail databaseFunctionParameter) {
 // Option 8 function
 // Delete an existing VoIP carrier, all associated CDRs and inserted into YAP logs
 func option8(dbDetail databaseFunctionParameter) {
-	returnToMainMenu()
+
+	var (
+		voipCarrierID string
+		callDirection string
+		confirm       string
+	)
+
+	clearScreen()
+	fmt.Println("")
+	fmt.Println("")
+	fmt.Println("     " + bgRed + textBoldWhite + " ┏━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┓ " + resetColour)
+	fmt.Println("     " + bgRed + textBoldWhite + " ┃   THIS OPTION WILL DELETE EVERYTING ASSOCIATED WITH A VOIP CARRIER, USE WITH CAUTION!   ┃ " + resetColour)
+	fmt.Println("     " + bgRed + textBoldWhite + " ┃    IF A VOIP SUPPLIER HAS CHANGED THEIR CDR OR RATE CARD FORMAT AND YOU WANT TO KEEP    ┃ " + resetColour)
+	fmt.Println("     " + bgRed + textBoldWhite + " ┃ PRIEVIOUS RECORDS, YOU CAN ALTERNATIVLY CREATE A NEW VOIP CARRIER INSTEAD WITH OPTION 4 ┃ " + resetColour)
+	fmt.Println("     " + bgRed + textBoldWhite + " ┗━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━┛ " + resetColour)
+	fmt.Println("")
+	fmt.Println("          ╔═════╦═════════════════════════════════════════════════════════════════════════════════╗")
+	fmt.Println("          ║ " + bgRed + textBoldWhite + "[8]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete an existing VoIP carrier, all associated CDRs and inserted into YAP logs" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ╔════╩═════╩═════════════════════════════╦═══════════════════════════════════════════════════╝")
+	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
+	fmt.Println("     ╚════════════════════════════════════════╝")
+
+	voipCarrierID = voipCarrierIDInput(dbDetail, "option8")
+	callDirection = callDirectionInput(dbDetail, "option8")
+
+	confirmList := yesNoSlice()
+	fmt.Println("")
+	fmt.Print("     Type yes to confirm the deletion of the VoIP carrier [Valid input - " + strings.Join(confirmList, ", ") + "]: ")
+	fmt.Scanln(&confirm)
+
+	// If the user pressed the enter/return key then re-run the cdrimporter function
+	if confirm == "" {
+		cdrimporter()
+	}
+
+	// Return to main menu if menu is input
+	mainMenu(confirm)
+
+	// Check the value for voipCarrierID is contained in the slice
+	validateConfirm := slices.Contains(confirmList, confirm)
+
+	if validateConfirm == false {
+		// Invalid input message displays to the user
+		messageBox("Invalid input, please re-enter either "+strings.Join(confirmList, ", "), bgYellow)
+		fmt.Print(textBoldBlack)
+		fmt.Print("     Press the enter/return key to continue ")
+		fmt.Print(resetColour)
+		var enter string
+		fmt.Scanln(&enter)
+		if enter == "" || enter != "" {
+			option8(dbDetail)
+		}
+	}
+
+	if confirm == "yes" || confirm == "Yes" || confirm == "YES" || confirm == "y" || confirm == "Y" {
+
+		// Delete records from the yap_cdr_insert_log table
+		dbDetail.connection.Exec("DELETE FROM cdr_importer.yap_cdr_insert_log WHERE voip_carrier_id = ?;", voipCarrierID)
+
+		// Delete record from the voip_carrier table
+		dbDetail.connection.Exec("DELETE FROM cdr_importer.voip_carrier WHERE id = ?;", voipCarrierID)
+
+		// Drop the view___[CALL DIRECTION]_total_cdr_[CARRIER ID] view
+		dbDetail.connection.Exec("DROP VIEW IF EXISTS cdr_importer.view___" + callDirection + "_total_cdr_" + voipCarrierID)
+
+		// Drop the view___[CALL DIRECTION]_itemised_cdr_[CARRIER ID] view
+		dbDetail.connection.Exec("DROP VIEW IF EXISTS cdr_importer.view___" + callDirection + "_itemised_cdr_" + voipCarrierID)
+
+		// Drop the view___[CALL DIRECTION]_cdr_rate_card_[CARRIER ID] view
+		dbDetail.connection.Exec("DROP VIEW IF EXISTS cdr_importer.view___" + callDirection + "_cdr_rate_card_" + voipCarrierID)
+
+		// Drop the view___[CALL DIRECTION]_cdr_[CARRIER ID] view
+		dbDetail.connection.Exec("DROP VIEW IF EXISTS cdr_importer.view___" + callDirection + "_cdr_" + voipCarrierID)
+
+		// Drop the view___[CALL DIRECTION]_rate_card_[CARRIER ID] view
+		dbDetail.connection.Exec("DROP VIEW IF EXISTS cdr_importer.view___" + callDirection + "_rate_card_" + voipCarrierID)
+
+		// Drop the [CALL DIRECTION]_cdr_[CARRIER ID] table
+		dbDetail.connection.Exec("DROP TABLE IF EXISTS cdr_importer." + callDirection + "_cdr_" + voipCarrierID)
+
+		// Drop the [CALL DIRECTION]_rate_card_[CARRIER ID] table
+		dbDetail.connection.Exec("DROP TABLE IF EXISTS cdr_importer." + callDirection + "_rate_card_" + voipCarrierID)
+
+		// Inform the user the VoIP carrier has been deleted
+		messageBox("The VoIP carrier has been deleted", bgGreen)
+
+		returnToMainMenu()
+
+	} else {
+		returnToMainMenu()
+	}
 }
 
 // Option 9 function
