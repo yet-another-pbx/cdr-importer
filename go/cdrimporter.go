@@ -915,9 +915,9 @@ func option1(dbDetail databaseFunctionParameter) {
 	fmt.Println(textBoldBlack)
 	fmt.Println("     ╔══════════════════════════╗")
 	fmt.Println("     ║ Itemised Call Charge CDR ║")
-	fmt.Println("     ╠═══════════════════╦══════╩═════════════════════════╦═══════════════════════╦══════════════════╦══════════╦═══════════════════════╦══════════╦═══════════════════════════╦═══════════════════════════╦══════════╗")
-	fmt.Println("     ║        YAP        ║               YAP              ║          TAG          ║    Telephone     ║ Duration ║       Date (Time)     ║   Time   ║     No Minimum Charge     ║  Minimum Charge For Call  ║  Charge  ║")
-	fmt.Println("     ║    Customer ID    ║          Customer Name         ║ (Same on YAP Invoice) ║  Number Dialled  ║ HH:MM:SS ║ DD/MM/YYYY (HH:MM:SS) ║ HH:MM:SS ║     For Call Duration     ║ Duration Below 60 Seconds ║ Per Call ║")
+	fmt.Println("     ╠═══════════════════╦══════╩═════════════════════════╦═══════════════════════╦══════════════════╦══════════╦═══════════════════════╦══════════╦═══════════════════════════╦═══════════════════════════╦════════════════╗")
+	fmt.Println("     ║        YAP        ║               YAP              ║          TAG          ║    Telephone     ║ Duration ║       Date (Time)     ║   Time   ║     No Minimum Charge     ║  Minimum Charge For Call  ║     Charge     ║")
+	fmt.Println("     ║    Customer ID    ║          Customer Name         ║ (Same on YAP Invoice) ║  Number Dialled  ║ HH:MM:SS ║ DD/MM/YYYY (HH:MM:SS) ║ HH:MM:SS ║     For Call Duration     ║ Duration Below 60 Seconds ║    Per Call    ║")
 
 	for option1BSQL.Next() {
 
@@ -939,15 +939,15 @@ func option1(dbDetail databaseFunctionParameter) {
 			panic(err)
 		}
 
-		fmt.Println("     ╠═══════════════════╬════════════════════════════════╬═══════════════════════╬══════════════════╬══════════╬═══════════════════════╬══════════╬═══════════════════════════╬═══════════════════════════╬══════════╣")
+		fmt.Println("     ╠═══════════════════╬════════════════════════════════╬═══════════════════════╬══════════════════╬══════════╬═══════════════════════╬══════════╬═══════════════════════════╬═══════════════════════════╬════════════════╣")
 		// If no customer highlight in red
 		if yapCustomerID == "NO CUSTOMER" {
-			fmt.Println("     ║ " + bgRed + textBoldWhite + yapCustomerID + resetColour + textBoldBlack + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + bgRed + textBoldWhite + yapCustomerName + resetColour + textBoldBlack + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + cdrNumberDialled + strings.Repeat(" ", 17-len(cdrNumberDialled)) + "║ " + cdrDuration + strings.Repeat(" ", 9-len(cdrDuration)) + "║ " + cdrDateTime + strings.Repeat(" ", 22-len(cdrDateTime)) + "║ " + cdrTime + strings.Repeat(" ", 9-len(cdrTime)) + "║ " + noMinimumChargeForCallDuration + strings.Repeat(" ", 26-len(noMinimumChargeForCallDuration)) + "║ " + minimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 10-len(minimumChargeForCallDurationBelow60Seconds)) + "║ " + rateCardPricePerCall + strings.Repeat(" ", 9-len(rateCardPricePerCall)) + "║")
+			fmt.Println("     ║ " + bgRed + textBoldWhite + yapCustomerID + resetColour + textBoldBlack + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + bgRed + textBoldWhite + yapCustomerName + resetColour + textBoldBlack + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + cdrNumberDialled + strings.Repeat(" ", 17-len(cdrNumberDialled)) + "║ " + cdrDuration + strings.Repeat(" ", 9-len(cdrDuration)) + "║ " + cdrDateTime + strings.Repeat(" ", 22-len(cdrDateTime)) + "║ " + cdrTime + strings.Repeat(" ", 9-len(cdrTime)) + "║ " + noMinimumChargeForCallDuration + strings.Repeat(" ", 26-len(noMinimumChargeForCallDuration)) + "║ " + minimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 26-len(minimumChargeForCallDurationBelow60Seconds)) + "║ " + rateCardPricePerCall + strings.Repeat(" ", 15-len(rateCardPricePerCall)) + "║")
 		} else {
-			fmt.Println("     ║ " + yapCustomerID + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + yapCustomerName + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + cdrNumberDialled + strings.Repeat(" ", 17-len(cdrNumberDialled)) + "║ " + cdrDuration + strings.Repeat(" ", 9-len(cdrDuration)) + "║ " + cdrDateTime + strings.Repeat(" ", 22-len(cdrDateTime)) + "║ " + cdrTime + strings.Repeat(" ", 9-len(cdrTime)) + "║ " + noMinimumChargeForCallDuration + strings.Repeat(" ", 26-len(noMinimumChargeForCallDuration)) + "║ " + minimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 26-len(minimumChargeForCallDurationBelow60Seconds)) + "║ " + rateCardPricePerCall + strings.Repeat(" ", 9-len(rateCardPricePerCall)) + "║")
+			fmt.Println("     ║ " + yapCustomerID + strings.Repeat(" ", 18-len(yapCustomerID)) + "║ " + yapCustomerName + strings.Repeat(" ", 31-len(yapCustomerName)) + "║ " + cdrTag + strings.Repeat(" ", 22-len(cdrTag)) + "║ " + cdrNumberDialled + strings.Repeat(" ", 17-len(cdrNumberDialled)) + "║ " + cdrDuration + strings.Repeat(" ", 9-len(cdrDuration)) + "║ " + cdrDateTime + strings.Repeat(" ", 22-len(cdrDateTime)) + "║ " + cdrTime + strings.Repeat(" ", 9-len(cdrTime)) + "║ " + noMinimumChargeForCallDuration + strings.Repeat(" ", 26-len(noMinimumChargeForCallDuration)) + "║ " + minimumChargeForCallDurationBelow60Seconds + strings.Repeat(" ", 26-len(minimumChargeForCallDurationBelow60Seconds)) + "║ " + rateCardPricePerCall + strings.Repeat(" ", 15-len(rateCardPricePerCall)) + "║")
 		}
 	}
-	fmt.Println("     ╚═══════════════════╩════════════════════════════════╩═══════════════════════╩══════════════════╩══════════╩═══════════════════════╩══════════╩═══════════════════════════╩═══════════════════════════╩══════════╝")
+	fmt.Println("     ╚═══════════════════╩════════════════════════════════╩═══════════════════════╩══════════════════╩══════════╩═══════════════════════╩══════════╩═══════════════════════════╩═══════════════════════════╩════════════════╝")
 	fmt.Println(resetColour)
 	returnToMainMenu()
 }
