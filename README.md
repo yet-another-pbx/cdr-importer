@@ -112,7 +112,7 @@ CDR Importer is a CLI tool used to import CDR's, re-rate them and insert them as
 ## YAP total outbound minutes for each phone number (tag):
 
 ![YAP total outbound minutes 01614960000](https://github.com/yet-another-pbx/cdr-importer/blob/main/image/yap_total_outbound_minutes_01614960000.png)
-![YAP total outbound minutes 01632960000](https://github.com/yet-another-pbx/cdr-importer/blob/main/image/example_yap_invoice_page_01632960000.png)
+![YAP total outbound minutes 01632960000](https://github.com/yet-another-pbx/cdr-importer/blob/main/image/yap_total_outbound_minutes_01632960000.png)
 ![YAP total outbound minutes 02079460000](https://github.com/yet-another-pbx/cdr-importer/blob/main/image/yap_total_outbound_minutes_02079460000.png)
 
 <br>
