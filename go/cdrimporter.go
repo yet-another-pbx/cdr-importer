@@ -1390,7 +1390,7 @@ func option4(dbDetail databaseFunctionParameter) {
 }
 
 // Option 5 function
-// Replace or edit an exisitng call rate card for a VoIP carrier
+// Replace or edit an existing call rate card for a VoIP carrier
 func option5(dbDetail databaseFunctionParameter) {
 
 	var (
@@ -1403,13 +1403,13 @@ func option5(dbDetail databaseFunctionParameter) {
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("          ╔═════╦═══════════════════════════════════════════════════════════════╗")
-	fmt.Println("          ║ " + bgPurple + textBoldWhite + "[5]" + resetColour + textBoldBlack + " ║ " + bgPurple + textBoldWhite + "Replace or edit an exisitng call rate card for a VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("          ║ " + bgPurple + textBoldWhite + "[5]" + resetColour + textBoldBlack + " ║ " + bgPurple + textBoldWhite + "Replace or edit an existing call rate card for a VoIP carrier" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╔════╩═════╩═════════════════════════════╦═════════════════════════════════╝")
 	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
 	fmt.Println("     ╚════════════════════════════════════════╝")
 	fmt.Println("")
 	fmt.Println("     ╔═════╦════════════════════════════════════╗")
-	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[A]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Replace an exisitng call rate card" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[A]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Replace an existing call rate card" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╠═════╬═════════════════════════════════╦══╝")
 	fmt.Println("     ║ " + bgPurple + textBoldWhite + "[B]" + resetColour + textBoldBlack + " ║ " + bgPurple + textBoldWhite + "Edit an existing call rate card" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╚═════╩═════════════════════════════════╝")
@@ -1449,7 +1449,7 @@ func option5(dbDetail databaseFunctionParameter) {
 		fmt.Println("")
 		fmt.Println("")
 		fmt.Println("          ╔═════╦════════════════════════════════════╗")
-		fmt.Println("          ║ " + bgGreen + textBoldWhite + "[A]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Replace an exisitng call rate card" + resetColour + textBoldBlack + " ║")
+		fmt.Println("          ║ " + bgGreen + textBoldWhite + "[A]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Replace an existing call rate card" + resetColour + textBoldBlack + " ║")
 		fmt.Println("     ╔════╩═════╩════════════════════════════════════╩══════════════════════════════════════════════════════════════════╗")
 		fmt.Println("     ║ " + textBoldBlack + "The rate card columns must be the same as before, if the columns are different add a new VoIP carrier (Option 4) ║")
 		fmt.Println("     ╚══════════════════════════════════════════════════════════════════════════════════════════════════════════════════╝")
@@ -1655,7 +1655,7 @@ func option6(dbDetail databaseFunctionParameter) {
 }
 
 // Option 7 function
-// Delete a previsouly imported CDR from a VoIP carrier
+// Delete a previously imported CDR from a VoIP carrier
 func option7(dbDetail databaseFunctionParameter) {
 
 	var (
@@ -1668,7 +1668,7 @@ func option7(dbDetail databaseFunctionParameter) {
 	fmt.Println("")
 	fmt.Println("")
 	fmt.Println("          ╔═════╦══════════════════════════════════════════════════════╗")
-	fmt.Println("          ║ " + bgRed + textBoldWhite + "[7]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete a previsouly imported CDR from a VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("          ║ " + bgRed + textBoldWhite + "[7]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete a previously imported CDR from a VoIP carrier" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╔════╩═════╩═════════════════════════════╦════════════════════════╝")
 	fmt.Println("     ║ Type \"menu\" to return to the main menu ║")
 	fmt.Println("     ╚════════════════════════════════════════╝")
@@ -1956,11 +1956,11 @@ func cdrimporter() {
 	fmt.Println("     ╠═════╬═══════════════════════════════════════════════════════════════════╦══════╝")
 	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[4]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Add a new VoIP carrier (must have a call rate card in CSV format)" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╠═════╬═══════════════════════════════════════════════════════════════╦═══╝")
-	fmt.Println("     ║ " + bgPurple + textBoldWhite + "[5]" + resetColour + textBoldBlack + " ║ " + bgPurple + textBoldWhite + "Replace or edit an exisitng call rate card for a VoIP carrier" + resetColour + textBoldBlack + " ║")
+	fmt.Println("     ║ " + bgPurple + textBoldWhite + "[5]" + resetColour + textBoldBlack + " ║ " + bgPurple + textBoldWhite + "Replace or edit an existing call rate card for a VoIP carrier" + resetColour + textBoldBlack + " ║")
 	fmt.Println("     ╠═════╬════════════════════════════════════════════════╦══════════════╝")
 	fmt.Println("     ║ " + bgGreen + textBoldWhite + "[6]" + resetColour + textBoldBlack + " ║ " + bgGreen + textBoldWhite + "Import a new CDR into an existing VoIP carrier" + resetColour + " ║")
 	fmt.Println("     ╠═════╬════════════════════════════════════════════════╩═════╗")
-	fmt.Println("     ║ " + bgRed + textBoldWhite + "[7]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete a previsouly imported CDR from a VoIP carrier" + resetColour + " ║")
+	fmt.Println("     ║ " + bgRed + textBoldWhite + "[7]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete a previously imported CDR from a VoIP carrier" + resetColour + " ║")
 	fmt.Println("     ╠═════╬══════════════════════════════════════════════════════╩══════════════════════════╗")
 	fmt.Println("     ║ " + bgRed + textBoldWhite + "[8]" + resetColour + textBoldBlack + " ║ " + bgRed + textBoldWhite + "Delete an existing VoIP carrier, all associated CDRs and inserted into YAP logs" + resetColour + " ║")
 	fmt.Println("     ╠═════╬═════════════════════════════════════════════════════════════════════════╦═══════╝")
