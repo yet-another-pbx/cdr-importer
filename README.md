@@ -6,6 +6,12 @@
 CDR Importer is a CLI tool used to import CDR's, re-rate them and insert them as an invoice item into the YAP (Yet Another PBX) invoice_item table. This software is specifically designed to work with YAP
 
 <br>
+
+# CDR Importer Website for Manual/Guides
+
+https://yap.ell.today
+
+<br>
 <br>
 
 ## Example carrier CDR spreadsheet:
