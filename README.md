@@ -2,6 +2,22 @@
 <img src="https://github.com/yet-another-pbx/cdr-importer/blob/main/image/main_menu.png" alt="CDR Importer Main Menu">
 </p>
 
+<br>
+
+<h3 align="center">All CDR Importer Go, BASH and SQL code, configuration files, guides and instructions are 100% designed, written and developed by a human programmer - IN THE INTEREST OF SECURITY AND QUALITY AI WILL NEVER BE USED</h3>
+
+<br>
+
+<p align="center">
+<a href="https://no-ai-icon.com/statement/?url=github.com/yet-another-pbx/cdr-importer">
+<img src="https://github.com/yet-another-pbx/cdr-importer/blob/main/image/human_created_content.jpeg" alt="No AI used to create CDR Importer" width="150" height="150"></a>
+&nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp &nbsp;
+<a href="https://no-ai-icon.com/statement/?url=github.com/yet-another-pbx/cdr-importer">
+<img src="https://github.com/yet-another-pbx/yap/blob/main/image/no_ai.jpeg" alt="CDR Importer is 100% created by a human" width="150" height="150"></a>
+</p>
+
+<br>
+
 # CDR Importer
 CDR Importer is a CLI tool used to import CDR's, re-rate them and insert them as an invoice item into the YAP (Yet Another PBX) invoice_item table. This software is specifically designed to work with YAP
 
